@@ -1,5 +1,6 @@
 const std = @import("std");
 const init = @import("init.zig").init;
+const remote = @import("remote.zig");
 const switch_mod = @import("switch.zig");
 const error_types = @import("error.zig");
 
@@ -20,13 +21,47 @@ pub export fn tix_init() c_int {
     };
 }
 
+/// Returns the remote name(s). If verbose is non-zero, includes URLs.
+pub export fn tix_remote(output: *[*c]u8, verbose: c_int) c_int {
+    const allocator = std.heap.c_allocator;
+
+    const remote_result = remote.remote(allocator, verbose != 0) catch |err| {
+        return @intFromEnum(ErrorCode.fromError(err));
+    };
+
+    // Convert to null-terminated C string
+    const c_str = allocator.dupeZ(u8, remote_result) catch {
+        allocator.free(remote_result);
+        return @intFromEnum(ErrorCode.OUT_OF_MEMORY);
+    };
+    allocator.free(remote_result);
+
+    output.* = c_str.ptr;
+    return 0;
+}
+
+/// Adds a new remote with the specified name and URL.
+pub export fn tix_remote_add(name: [*:0]const u8, url: [*:0]const u8) c_int {
+    const allocator = std.heap.c_allocator;
+
+    // Convert C strings to Zig slices
+    const name_slice = std.mem.span(name);
+    const url_slice = std.mem.span(url);
+
+    remote.remoteAdd(allocator, name_slice, url_slice) catch |err| {
+        return @intFromEnum(ErrorCode.fromError(err));
+    };
+
+    return 0;
+}
+
 /// Switches to the specified project. If `create` is non-zero, creates the project if it doesn't exist.
 pub export fn tix_switch_project(project: [*:0]const u8, create: c_int) c_int {
     const allocator = std.heap.c_allocator;
-    
+
     // Convert C string to Zig slice
     const project_slice = std.mem.span(project);
-    
+
     // Convert c_int to bool
     const should_create = create != 0;
 
