@@ -1,0 +1,62 @@
+---
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Zig
+        uses: goto-bus-stop/setup-zig@v2
+        with:
+          version: 0.14.1
+
+      - name: Build all platforms
+        run: zig build release
+
+      - name: Package artifacts
+        run: |
+          mkdir -p release
+
+          # Package Mac ARM64
+          tar -czf release/libtix-macos-aarch64.tar.gz \
+            -C zig-out/aarch64-macos libtix.a tix.h
+
+          # Package Mac x86_64
+          tar -czf release/libtix-macos-x86_64.tar.gz \
+            -C zig-out/x86_64-macos libtix.a tix.h
+
+          # Package Linux x86_64
+          tar -czf release/libtix-linux-x86_64.tar.gz \
+            -C zig-out/x86_64-linux libtix.a tix.h
+
+          # Package Windows x86_64
+          cd zig-out/x86_64-windows
+          zip ../../release/libtix-windows-x86_64.zip tix.dll tix.lib tix.h
+          cd ../..
+
+          # Create checksums
+          cd release
+          sha256sum *.tar.gz *.zip > checksums.txt
+          cd ..
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            release/*.tar.gz
+            release/*.zip
+            release/checksums.txt
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
