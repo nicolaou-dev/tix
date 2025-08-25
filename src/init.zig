@@ -1,0 +1,169 @@
+const std = @import("std");
+const git = @import("git.zig");
+
+pub const WorkspaceError = error{
+    InitWorkspaceCreationFailed,
+    InitAccessDenied,
+};
+
+const InitResult = enum {
+    initialized,
+    reinitialized,
+};
+
+pub fn init(allocator: std.mem.Allocator) WorkspaceError!InitResult {
+    const tix = ".tix";
+
+    std.fs.cwd().makePath(tix) catch |err| switch (err) {
+        error.AccessDenied => return WorkspaceError.InitAccessDenied,
+        else => return WorkspaceError.InitWorkspaceCreationFailed,
+    };
+    const git_exists = if (std.fs.cwd().access(".tix/.git", .{})) |_| true else |_| false;
+
+    errdefer if (!git_exists) std.fs.cwd().deleteTree(tix) catch {};
+
+    addTixToGitIgnore(allocator) catch {};
+
+    git.init(allocator) catch {
+        return WorkspaceError.InitWorkspaceCreationFailed;
+    };
+
+    return if (git_exists) .reinitialized else .initialized;
+}
+
+fn addTixToGitIgnore(allocator: std.mem.Allocator) !void {
+    const gitignore_path = ".gitignore";
+
+    if (std.fs.cwd().access(gitignore_path, .{})) |_| {} else |_| {
+        const file = try std.fs.cwd().createFile(gitignore_path, .{});
+        file.close();
+    }
+
+    const contents = try std.fs.cwd().readFileAlloc(allocator, gitignore_path, 1024 * 1024);
+    defer allocator.free(contents);
+
+    if (std.mem.indexOf(u8, contents, ".tix") != null) return;
+
+    const file = try std.fs.cwd().openFile(gitignore_path, .{ .mode = .write_only });
+    defer file.close();
+    try file.seekFromEnd(0);
+
+    if (contents.len > 0 and contents[contents.len - 1] != '\n') {
+        try file.writeAll("\n");
+    }
+
+    try file.writeAll(".tix\n");
+}
+
+test "init create a new Tix workspace" {
+    const test_helper = @import("test_helper.zig");
+    const allocator = std.testing.allocator;
+
+    // Setup isolated test directory
+    const original = try test_helper.setupTestDir(allocator, "init_test");
+    defer test_helper.cleanupTestDir("init_test", original);
+
+    const result = try init(allocator);
+    try std.testing.expect(result == .initialized);
+
+    // Check .tix directory exists
+    try std.fs.cwd().access(".tix", .{});
+
+    // Check .tix/.git directory exists
+    try std.fs.cwd().access(".tix/.git", .{});
+
+    // Check .gitignore file exists and contains .tix
+    const gitignore_contents = try std.fs.cwd().readFileAlloc(allocator, ".gitignore", 1024 * 1024);
+    defer allocator.free(gitignore_contents);
+    try std.testing.expect(std.mem.indexOf(u8, gitignore_contents, ".tix") != null);
+
+    // Re-initialize should return reinitialized
+    const result2 = try init(allocator);
+    try std.testing.expect(result2 == .reinitialized);
+}
+
+test ".tix is not deleted on reinitialization failure" {
+    const test_helper = @import("test_helper.zig");
+    const allocator = std.testing.allocator;
+
+    // Setup isolated test directory
+    const original = try test_helper.setupTestDir(allocator, "reinit_test");
+    defer test_helper.cleanupTestDir("reinit_test", original);
+
+    // First successful init
+    _ = try init(allocator);
+
+    // Create a ticket to verify it's preserved
+    try std.fs.cwd().makePath(".tix/01234567890123456789012345");
+
+    // Make git.init fail by creating a file at .tix/.git (instead of directory)
+    try std.fs.cwd().deleteTree(".tix/.git");
+    const file = try std.fs.cwd().createFile(".tix/.git", .{});
+    defer file.close();
+
+    // This should fail but not delete .tix
+    _ = init(allocator) catch {};
+
+    // Verify .tix and our ticket still exist
+    try std.fs.cwd().access(".tix", .{});
+    try std.fs.cwd().access(".tix/01234567890123456789012345", .{});
+}
+
+test "addTixToGitIgnore creates new .gitignore with .tix" {
+    const test_helper = @import("test_helper.zig");
+    const allocator = std.testing.allocator;
+
+    // Setup isolated test directory
+    const original = try test_helper.setupTestDir(allocator, "gitignore_new_test");
+    defer test_helper.cleanupTestDir("gitignore_new_test", original);
+
+    try addTixToGitIgnore(allocator);
+
+    // Check .gitignore file exists and contains .tix
+    const gitignore_contents = try std.fs.cwd().readFileAlloc(allocator, ".gitignore", 1024 * 1024);
+    defer allocator.free(gitignore_contents);
+    try std.testing.expect(std.mem.indexOf(u8, gitignore_contents, ".tix") != null);
+}
+
+test "addTixToGitIgnore appends .tix if .gitignore exists without it" {
+    const test_helper = @import("test_helper.zig");
+    const allocator = std.testing.allocator;
+
+    // Setup isolated test directory
+    const original = try test_helper.setupTestDir(allocator, "gitignore_append_test");
+    defer test_helper.cleanupTestDir("gitignore_append_test", original);
+
+    // Create an existing .gitignore file without .tix
+    const file = try std.fs.cwd().createFile(".gitignore", .{});
+    defer file.close();
+    try file.writeAll("node_modules\n");
+    try file.writeAll("dist\n");
+
+    try addTixToGitIgnore(allocator);
+
+    // Check .gitignore file exists and contains .tix
+    const gitignore_contents = try std.fs.cwd().readFileAlloc(allocator, ".gitignore", 1024 * 1024);
+    defer allocator.free(gitignore_contents);
+    try std.testing.expect(std.mem.indexOf(u8, gitignore_contents, ".tix") != null);
+    try std.testing.expect(std.mem.indexOf(u8, gitignore_contents, "node_modules") != null);
+    try std.testing.expect(std.mem.indexOf(u8, gitignore_contents, "dist") != null);
+}
+
+test "addTixToGitIgnore idempotent - doesn't add twice" {
+    const test_helper = @import("test_helper.zig");
+    const allocator = std.testing.allocator;
+
+    // Setup isolated test directory
+    const original = try test_helper.setupTestDir(allocator, "gitignore_idempotent_test");
+    defer test_helper.cleanupTestDir("gitignore_idempotent_test", original);
+
+    // Call twice
+    try addTixToGitIgnore(allocator);
+    try addTixToGitIgnore(allocator);
+
+    const contents = try std.fs.cwd().readFileAlloc(allocator, ".gitignore", 1024);
+    defer allocator.free(contents);
+
+    // Should only have one .tix entry
+    try std.testing.expectEqualStrings(".tix\n", contents);
+}
