@@ -9,3 +9,4 @@ zig-out/
 *.dylib
 *.dll
 *.pdb
+.tix

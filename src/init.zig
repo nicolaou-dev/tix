@@ -28,6 +28,10 @@ pub fn init(allocator: std.mem.Allocator) WorkspaceError!InitResult {
         return WorkspaceError.InitWorkspaceCreationFailed;
     };
 
+    git.commitEmpty(allocator, "Workspace Initialized") catch {
+        return WorkspaceError.InitWorkspaceCreationFailed;
+    };
+
     return if (git_exists) .reinitialized else .initialized;
 }
 
