@@ -3,6 +3,7 @@ const init = @import("init.zig").init;
 const config = @import("config.zig");
 const remote = @import("remote.zig");
 const switch_mod = @import("switch.zig");
+const add_mod = @import("add.zig");
 const error_types = @import("error.zig");
 
 // Import error code mapping
@@ -108,4 +109,43 @@ pub export fn tix_switch_project(project: [*:0]const u8, create: c_int) c_int {
         .switched => 0,
         .created => 1,
     };
+}
+
+/// Adds a new ticket with the given title, body, and priority.
+/// Priority: 'a', 'b', 'c', 'z', or 0 for default (z)
+pub export fn tix_add(
+    title: [*:0]const u8,
+    body: [*:0]const u8,
+    priority: u8,
+    output: *[*c]u8,
+) c_int {
+    const allocator = std.heap.c_allocator;
+
+    // Convert C strings to Zig slices
+    const title_slice = std.mem.span(title);
+    const body_slice = std.mem.span(body);
+
+    // Parse priority: 0 means use default (null), otherwise parse the character
+    const priority_enum = if (priority == 0)
+        add_mod.Priority.Z
+    else switch (priority) {
+        'a', 'A' => add_mod.Priority.A,
+        'b', 'B' => add_mod.Priority.B,
+        'c', 'C' => add_mod.Priority.C,
+        'z', 'Z' => add_mod.Priority.Z,
+        else => return @intFromEnum(ErrorCode.INVALID_PRIORITY),
+    };
+
+    const result = add_mod.add(allocator, title_slice, body_slice, priority_enum) catch |err| {
+        return @intFromEnum(ErrorCode.fromError(err));
+    };
+
+    const c_str = allocator.dupeZ(u8, result) catch {
+        allocator.free(result);
+        return @intFromEnum(ErrorCode.OUT_OF_MEMORY);
+    };
+    allocator.free(result);
+
+    output.* = c_str.ptr;
+    return 0;
 }

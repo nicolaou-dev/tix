@@ -242,3 +242,129 @@ pub fn remoteAdd(
         return GitError.CommandFailed;
     }
 }
+
+pub fn add(
+    allocator: std.mem.Allocator,
+    paths: []const []const u8,
+) GitError!void {
+    var argv = std.ArrayList([]const u8).init(allocator);
+    defer argv.deinit();
+
+    try argv.append("git");
+    try argv.append("-C");
+    try argv.append(".tix");
+    try argv.append("add");
+
+    for (paths) |path| {
+        try argv.append(path);
+    }
+
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = argv.items,
+    }) catch {
+        return GitError.CommandFailed;
+    };
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+
+    const err_output = result.stderr;
+
+    const not_a_repo = "not a git repository";
+
+    if (indexOf(u8, err_output, not_a_repo) != null) {
+        return GitError.NotARepository;
+    }
+
+    if (result.term.Exited != 0) {
+        return GitError.CommandFailed;
+    }
+}
+
+pub fn commit(
+    allocator: std.mem.Allocator,
+    message: []const u8,
+) GitError!void {
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "git", "-C", ".tix", "commit", "-m", message },
+    }) catch {
+        return GitError.CommitFailed;
+    };
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+
+    if (result.term.Exited != 0) {
+        return GitError.CommandFailed;
+    }
+}
+
+pub fn resetHard(
+    allocator: std.mem.Allocator,
+) GitError!void {
+    const result = std.process.Child.run(.{ .allocator = allocator, .argv = &[_][]const u8{ "git", "-C", ".tix", "reset", "--hard" } }) catch {
+        return GitError.CommandFailed;
+    };
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+
+    if (result.term.Exited != 0) {
+        return GitError.CommandFailed;
+    }
+}
+
+pub fn clean(
+    allocator: std.mem.Allocator,
+) GitError!void {
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "git", "-C", ".tix", "clean", "-fd" },
+    }) catch {
+        return GitError.CommandFailed;
+    };
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+
+    if (result.term.Exited != 0) {
+        return GitError.CommandFailed;
+    }
+}
+
+pub fn log(
+    allocator: std.mem.Allocator,
+) GitError![]const u8 {
+    var argv = std.ArrayList([]const u8).init(allocator);
+    defer argv.deinit();
+
+    try argv.append("git");
+    try argv.append("-C");
+    try argv.append(".tix");
+    try argv.append("log");
+
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = argv.items,
+    }) catch {
+        return GitError.CommandFailed;
+    };
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+
+    const err_output = result.stderr;
+
+    const not_a_repo = "not a git repository";
+
+    if (indexOf(u8, err_output, not_a_repo) != null) {
+        return GitError.NotARepository;
+    }
+
+    if (result.term.Exited != 0) {
+        return GitError.CommandFailed;
+    }
+
+    const output = allocator.dupe(u8, result.stdout) catch {
+        return GitError.OutOfMemory;
+    };
+
+    return output;
+}

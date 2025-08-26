@@ -6,6 +6,7 @@ pub const ErrorCode = enum(c_int) {
     OUT_OF_MEMORY = -1,
     NOT_A_REPOSITORY = -2,
     COMMAND_FAILED = -3,
+    FILE_SYSTEM_ERROR = -4,
     UNKNOWN_ERROR = -99,
 
     // Init-specific errors
@@ -24,12 +25,17 @@ pub const ErrorCode = enum(c_int) {
     SWITCH_PROJECT_ALREADY_EXISTS = -41,
     SWITCH_ALREADY_ON_PROJECT = -42,
 
+    // Add-specific errors
+    INVALID_PRIORITY = -50,
+    INVALID_TITLE = -51,
+
     pub fn fromError(err: anyerror) ErrorCode {
         return switch (err) {
             // General errors (used across modules)
             error.OutOfMemory => .OUT_OF_MEMORY,
             error.NotARepository => .NOT_A_REPOSITORY,
             error.CommandFailed => .COMMAND_FAILED,
+            error.FileSystemError => .FILE_SYSTEM_ERROR,
 
             // Init-specific
             error.InitWorkspaceCreationFailed => .INIT_WORKSPACE_CREATION_FAILED,
@@ -46,6 +52,10 @@ pub const ErrorCode = enum(c_int) {
             error.ProjectNotFound => .SWITCH_PROJECT_NOT_FOUND,
             error.ProjectAlreadyExists => .SWITCH_PROJECT_ALREADY_EXISTS,
             error.AlreadyOnProject => .SWITCH_ALREADY_ON_PROJECT,
+
+            // Add-specific
+            error.InvalidPriority => .INVALID_PRIORITY,
+            error.InvalidTitle => .INVALID_TITLE,
 
             else => .UNKNOWN_ERROR,
         };

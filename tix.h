@@ -20,6 +20,7 @@ extern "C" {
 #define TIX_OUT_OF_MEMORY                    -1
 #define TIX_NOT_A_REPOSITORY                 -2
 #define TIX_COMMAND_FAILED                   -3
+#define TIX_FILE_SYSTEM_ERROR                -4
 #define TIX_UNKNOWN_ERROR                    -99
 
 /* Init-specific errors */
@@ -38,6 +39,10 @@ extern "C" {
 #define TIX_SWITCH_PROJECT_ALREADY_EXISTS    -41
 #define TIX_SWITCH_ALREADY_ON_PROJECT        -42
 
+/* Add-specific errors */
+#define TIX_INVALID_PRIORITY                 -50
+#define TIX_INVALID_TITLE                    -51
+
 /* Function declarations matching root.zig exports */
 
 /* Workspace management */
@@ -51,6 +56,12 @@ int tix_config_set(const char *key, const char *value);
 /* Returns: 0 = success, negative = error. Output string must be freed by caller. */
 int tix_config_get(const char *key, char **value_out);
 
+
+/* Ticket management */
+/* Add a new ticket with title, body, and priority
+ * priority: 'a', 'b', 'c', 'z', or 0 for default (z)
+ * Returns: 0 = success, negative = error. Output string contains ticket ID and must be freed by caller. */
+int tix_add(const char *title, const char *body, unsigned char priority, char **id_out);
 
 /* Remote management */
 /* Returns: 0 = success, negative = error. Output string must be freed by caller.
