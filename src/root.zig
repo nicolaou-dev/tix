@@ -1,5 +1,6 @@
 const std = @import("std");
 const init = @import("init.zig").init;
+const config = @import("config.zig");
 const remote = @import("remote.zig");
 const switch_mod = @import("switch.zig");
 const error_types = @import("error.zig");
@@ -19,6 +20,40 @@ pub export fn tix_init() c_int {
         .initialized => 0,
         .reinitialized => 1,
     };
+}
+
+pub export fn tix_config_set(key: [*:0]const u8, value: [*:0]const u8) c_int {
+    const allocator = std.heap.c_allocator;
+
+    // Convert C strings to Zig slices
+    const key_slice = std.mem.span(key);
+    const value_slice = std.mem.span(value);
+
+    config.configSetKey(allocator, key_slice, value_slice) catch |err| {
+        return @intFromEnum(ErrorCode.fromError(err));
+    };
+
+    return 0;
+}
+
+pub export fn tix_config_get(key: [*:0]const u8, output: *[*c]u8) c_int {
+    const allocator = std.heap.c_allocator;
+
+    // Convert C string to Zig slice
+    const key_slice = std.mem.span(key);
+
+    const value = config.configGetKey(allocator, key_slice) catch |err| {
+        return @intFromEnum(ErrorCode.fromError(err));
+    };
+
+    // Convert to null-terminated C string
+    const c_str = allocator.dupeZ(u8, value) catch {
+        return @intFromEnum(ErrorCode.OUT_OF_MEMORY);
+    };
+    allocator.free(value);
+    output.* = c_str.ptr;
+
+    return 0;
 }
 
 /// Returns the remote name(s). If verbose is non-zero, includes URLs.

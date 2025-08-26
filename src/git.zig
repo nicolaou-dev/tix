@@ -7,6 +7,8 @@ pub const GitError = error{
 
     InitFailed,
 
+    ConfigKeyNotFound,
+
     BranchNotFound,
     BranchAlreadyExists,
     AlreadyOnBranch,
@@ -34,6 +36,60 @@ pub fn init(
     if (result.term.Exited != 0) {
         return GitError.InitFailed;
     }
+}
+
+pub fn config(
+    allocator: std.mem.Allocator,
+    key: []const u8,
+    value: ?[]const u8,
+) GitError![]const u8 {
+    var argv = std.ArrayList([]const u8).init(allocator);
+    defer argv.deinit();
+
+    try argv.append("git");
+    try argv.append("-C");
+    try argv.append(".tix");
+    try argv.append("config");
+    try argv.append("--local");
+    try argv.append(key);
+
+    if (value) |val| {
+        try argv.append(val);
+    }
+
+    const result = std.process.Child.run(.{ .allocator = allocator, .argv = argv.items }) catch {
+        return GitError.CommandFailed;
+    };
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+
+    const err_output = result.stderr;
+
+    const not_inside_git_repo = "inside a git repository";
+    const not_a_repo = "not a git repository";
+    const key_not_found = "key does not contain a section";
+
+    if (indexOf(u8, err_output, not_inside_git_repo) != null) {
+        return GitError.NotARepository;
+    }
+
+    if (indexOf(u8, err_output, not_a_repo) != null) {
+        return GitError.NotARepository;
+    }
+
+    if (indexOf(u8, err_output, key_not_found) != null) {
+        return GitError.ConfigKeyNotFound;
+    }
+
+    if (result.term.Exited != 0) {
+        return GitError.CommandFailed;
+    }
+
+    const output = allocator.dupe(u8, result.stdout) catch {
+        return GitError.OutOfMemory;
+    };
+
+    return output;
 }
 
 pub fn switchBranch(
