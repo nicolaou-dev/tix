@@ -5,7 +5,8 @@ pub const SwitchError = error{
     ProjectNotFound,
     ProjectAlreadyExists,
     AlreadyOnProject,
-    SwitchFailed,
+    NotARepository,
+    CommandFailed,
 };
 
 pub const SwitchResult = enum {
@@ -19,7 +20,8 @@ pub fn switchProject(allocator: std.mem.Allocator, project: []const u8, create: 
         error.BranchNotFound => return SwitchError.ProjectNotFound,
         error.BranchAlreadyExists => return SwitchError.ProjectAlreadyExists,
         error.AlreadyOnBranch => return SwitchError.AlreadyOnProject,
-        else => return SwitchError.SwitchFailed,
+        error.NotARepository => return SwitchError.NotARepository,
+        else => return SwitchError.CommandFailed,
     };
 
     return if (create) .created else .switched;

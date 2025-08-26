@@ -5,14 +5,13 @@ pub const RemoteError = error{
     RemoteAlreadyExists,
     InvalidRemoteName,
     NotARepository,
-    RemoteAddFailed,
-    RemoteFailed,
+    CommandFailed,
 };
 
 pub fn remote(allocator: std.mem.Allocator, verbose: bool) RemoteError![]const u8 {
     const result = git.remote(allocator, verbose) catch |err| switch (err) {
         error.NotARepository => return RemoteError.NotARepository,
-        else => return RemoteError.RemoteFailed,
+        else => return RemoteError.CommandFailed,
     };
 
     return result;
@@ -23,7 +22,7 @@ pub fn remoteAdd(allocator: std.mem.Allocator, name: []const u8, url: []const u8
         error.RemoteAlreadyExists => return RemoteError.RemoteAlreadyExists,
         error.InvalidRemoteName => return RemoteError.InvalidRemoteName,
         error.NotARepository => return RemoteError.NotARepository,
-        else => return RemoteError.RemoteAddFailed,
+        else => return RemoteError.CommandFailed,
     };
 }
 

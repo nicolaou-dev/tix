@@ -16,29 +16,27 @@ extern "C" {
 #define TIX_SUCCESS                           0
 #define TIX_CREATED                           1
 
-/* General errors */
+/* General errors (common across modules) */
 #define TIX_OUT_OF_MEMORY                    -1
+#define TIX_NOT_A_REPOSITORY                 -2
+#define TIX_COMMAND_FAILED                   -3
 #define TIX_UNKNOWN_ERROR                    -99
 
-/* Init errors */
+/* Init-specific errors */
 #define TIX_INIT_WORKSPACE_CREATION_FAILED   -10
 #define TIX_INIT_ACCESS_DENIED               -11
 
+/* Config-specific errors */
+#define TIX_CONFIG_INVALID_KEY               -20
 
-/** Config errors */
-#define TIX_CONFIG_KEY_NOT_FOUND             -20
-
-/* Remote errors */
+/* Remote-specific errors */
 #define TIX_REMOTE_ALREADY_EXISTS            -30
 #define TIX_REMOTE_INVALID_NAME              -31
-#define TIX_REMOTE_NOT_A_REPOSITORY          -32
-#define TIX_REMOTE_FAILED                    -33
 
-/* Switch errors */
+/* Switch-specific errors */
 #define TIX_SWITCH_PROJECT_NOT_FOUND         -40
 #define TIX_SWITCH_PROJECT_ALREADY_EXISTS    -41
 #define TIX_SWITCH_ALREADY_ON_PROJECT        -42
-#define TIX_SWITCH_FAILED                    -43
 
 /* Function declarations matching root.zig exports */
 
