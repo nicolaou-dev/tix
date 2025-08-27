@@ -13,8 +13,6 @@ extern "C" {
 #endif
 
 /* Error codes matching error.zig ErrorCode enum */
-#define TIX_SUCCESS                           0
-#define TIX_CREATED                           1
 
 /* General errors (common across modules) */
 #define TIX_OUT_OF_MEMORY                    -1
@@ -46,35 +44,68 @@ extern "C" {
 /* Function declarations matching root.zig exports */
 
 /* Workspace management */
-/* Returns: 0 = initialized, 1 = reinitialized, negative = error (see error codes above) */
+
+/**
+ * Initialize a new tix workspace
+ * @return 0 = initialized, 1 = reinitialized, -10 = workspace creation failed, -11 = access denied
+ */
 int tix_init(void);
 
-
-/* Returns: 0 = success, negative = error */
+/**
+ * Set a configuration key-value pair
+ * @param key Configuration key  
+ * @param value Configuration value
+ * @return 0 = success, -20 = invalid key
+ */
 int tix_config_set(const char *key, const char *value);
 
-/* Returns: 0 = success, negative = error. Output string must be freed by caller. */
+/**
+ * Get a configuration value
+ * @param key Configuration key
+ * @param value_out Output string (must be freed by caller)
+ * @return 0 = success, -20 = invalid key
+ */
 int tix_config_get(const char *key, char **value_out);
 
-
 /* Ticket management */
-/* Add a new ticket with title, body, and priority
- * priority: 'a', 'b', 'c', 'z', or 0 for default (z)
- * Returns: 0 = success, negative = error. Output string contains ticket ID and must be freed by caller. */
+
+/**
+ * Add a new ticket
+ * @param title Ticket title (required, non-empty)
+ * @param body Ticket description  
+ * @param priority Priority: 'a', 'b', 'c', 'z', or 0 for default (z)
+ * @param id_out Output string containing ticket ID (must be freed by caller)
+ * @return 0 = success, -50 = invalid priority, -51 = invalid title
+ */
 int tix_add(const char *title, const char *body, unsigned char priority, char **id_out);
 
 /* Remote management */
-/* Returns: 0 = success, negative = error. Output string must be freed by caller.
-   If verbose is non-zero, includes URLs in the output. */
+
+/**
+ * List remote repositories
+ * @param output Output string (must be freed by caller)
+ * @param verbose If non-zero, includes URLs in the output
+ * @return 0 = success, negative = error
+ */
 int tix_remote(char **output, int verbose);
 
-/* Project management */
-/* Returns: 0 = switched, 1 = created, negative = error (see error codes above) */
-int tix_switch_project(const char *project, int create);
-
-
-/* Returns: 0 = success, negative = error */
+/**
+ * Add a remote repository
+ * @param name Remote name
+ * @param url Remote URL
+ * @return 0 = success, -30 = remote already exists, -31 = invalid name
+ */
 int tix_remote_add(const char *name, const char *url);
+
+/* Project management */
+
+/**
+ * Switch to a different project (branch)
+ * @param project Project name
+ * @param create If non-zero, create project if it doesn't exist
+ * @return 0 = switched, 1 = created, -40 = project not found, -41 = project already exists, -42 = already on project
+ */
+int tix_switch_project(const char *project, int create);
 
 
 #ifdef __cplusplus
