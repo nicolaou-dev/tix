@@ -19,6 +19,7 @@ extern "C" {
 #define TIX_NOT_A_REPOSITORY                 -2
 #define TIX_COMMAND_FAILED                   -3
 #define TIX_FILE_SYSTEM_ERROR                -4
+#define TIX_INVALID_TICKET_ID                -5
 #define TIX_UNKNOWN_ERROR                    -99
 
 /* Init-specific errors */
@@ -40,6 +41,9 @@ extern "C" {
 /* Add-specific errors */
 #define TIX_INVALID_PRIORITY                 -50
 #define TIX_INVALID_TITLE                    -51
+
+/* Move-specific errors */
+#define TIX_INVALID_STATUS                   -60
 
 /* Function declarations matching root.zig exports */
 
@@ -106,6 +110,16 @@ int tix_remote_add(const char *name, const char *url);
  * @return 0 = switched, 1 = created, -40 = project not found, -41 = project already exists, -42 = already on project
  */
 int tix_switch_project(const char *project, int create);
+
+/* Ticket management */
+
+/**
+ * Move ticket to a different status
+ * @param ticket_id ULID of the ticket
+ * @param status Status character ('b'=backlog, 't'=todo, 'w'=doing, 'd'=done)
+ * @return 0 = success, -5 = invalid ticket ID, -60 = invalid status, -3 = command failed
+ */
+int tix_move(const char *ticket_id, unsigned char status);
 
 
 #ifdef __cplusplus

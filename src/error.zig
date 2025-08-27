@@ -7,6 +7,7 @@ pub const ErrorCode = enum(c_int) {
     NOT_A_REPOSITORY = -2,
     COMMAND_FAILED = -3,
     FILE_SYSTEM_ERROR = -4,
+    INVALID_TICKET_ID = -5,
     UNKNOWN_ERROR = -99,
 
     // Init-specific errors
@@ -29,6 +30,9 @@ pub const ErrorCode = enum(c_int) {
     INVALID_PRIORITY = -50,
     INVALID_TITLE = -51,
 
+    // Move-specific errors
+    INVALID_STATUS = -60,
+
     pub fn fromError(err: anyerror) ErrorCode {
         return switch (err) {
             // General errors (used across modules)
@@ -36,6 +40,7 @@ pub const ErrorCode = enum(c_int) {
             error.NotARepository => .NOT_A_REPOSITORY,
             error.CommandFailed => .COMMAND_FAILED,
             error.FileSystemError => .FILE_SYSTEM_ERROR,
+            error.InvalidTicketID => .INVALID_TICKET_ID,
 
             // Init-specific
             error.InitWorkspaceCreationFailed => .INIT_WORKSPACE_CREATION_FAILED,
@@ -56,6 +61,9 @@ pub const ErrorCode = enum(c_int) {
             // Add-specific
             error.InvalidPriority => .INVALID_PRIORITY,
             error.InvalidTitle => .INVALID_TITLE,
+
+            // Move-specific
+            error.InvalidStatus => .INVALID_STATUS,
 
             else => .UNKNOWN_ERROR,
         };

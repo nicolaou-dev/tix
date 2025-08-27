@@ -149,3 +149,19 @@ pub export fn tix_add(
     output.* = c_str.ptr;
     return 0;
 }
+
+pub export fn tix_move(ticket_id: [*:0]const u8, status: u8) c_int {
+    const ticket_id_slice = std.mem.span(ticket_id);
+
+    const Status = @import("status.zig").Status;
+    const status_enum = Status.fromString(status) orelse {
+        return @intFromEnum(ErrorCode.INVALID_STATUS);
+    };
+
+    const move_mod = @import("move.zig");
+    const result = move_mod.move(ticket_id_slice, status_enum) catch |err| {
+        return @intFromEnum(ErrorCode.fromError(err));
+    };
+
+    return result;
+}
