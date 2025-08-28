@@ -69,10 +69,16 @@ int tix_config_set(const char *key, const char *value);
 /**
  * Get a configuration value
  * @param key Configuration key
- * @param value_out Output string (must be freed by caller)
+ * @param value_out Output string (must be freed by caller using tix_config_free)
  * @return 0 = success, -20 = invalid key
  */
 int tix_config_get(const char *key, char **value_out);
+
+/**
+ * Free a string returned by tix_config_get
+ * @param str String to free
+ */
+void tix_config_free(char *str);
 
 /* Ticket management */
 
@@ -81,20 +87,32 @@ int tix_config_get(const char *key, char **value_out);
  * @param title Ticket title (required, non-empty)
  * @param body Ticket description  
  * @param priority Priority: 'a', 'b', 'c', 'z', or 0 for default (z)
- * @param id_out Output string containing ticket ID (must be freed by caller)
+ * @param id_out Output string containing ticket ID (must be freed by caller using tix_add_free)
  * @return 0 = success, -50 = invalid priority, -51 = invalid title
  */
 int tix_add(const char *title, const char *body, unsigned char priority, char **id_out);
+
+/**
+ * Free a string returned by tix_add
+ * @param str String to free
+ */
+void tix_add_free(char *str);
 
 /* Remote management */
 
 /**
  * List remote repositories
- * @param output Output string (must be freed by caller)
+ * @param output Output string (must be freed by caller using tix_remote_free)
  * @param verbose If non-zero, includes URLs in the output
  * @return 0 = success, negative = error
  */
 int tix_remote(char **output, int verbose);
+
+/**
+ * Free a string returned by tix_remote
+ * @param str String to free
+ */
+void tix_remote_free(char *str);
 
 /**
  * Add a remote repository
@@ -156,3 +174,16 @@ int tix_show(const char *ticket_id, CTicket **output);
  * @param ticket Pointer to CTicket to free
  */
 void tix_show_free(CTicket *ticket);
+
+/**
+ * Free a CTicket array returned by tix_list
+ * @param tickets Pointer to CTicket array to free
+ * @param count Number of tickets in the array
+ */
+void tix_list_free(CTicket *tickets, size_t count);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* TIX_H */

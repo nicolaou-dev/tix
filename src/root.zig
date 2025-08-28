@@ -257,3 +257,36 @@ pub export fn tix_show_free(ticket: ?*CTicket) void {
     t.*.deinit(allocator);
     allocator.destroy(t);
 }
+
+pub export fn tix_list_free(tickets: [*c]CTicket, count: usize) void {
+    if (tickets == null) return;
+    const allocator = std.heap.c_allocator;
+
+    // Free string fields in each ticket
+    for (0..count) |i| {
+        tickets[i].deinit(allocator);
+    }
+
+    // Free the array itself
+    const slice = tickets[0..count];
+    allocator.free(slice);
+}
+
+fn free_string(str: [*c]u8) void {
+    if (str == null) return;
+    const allocator = std.heap.c_allocator;
+    const slice = std.mem.span(str);
+    allocator.free(slice);
+}
+
+pub export fn tix_config_free(str: [*c]u8) void {
+    free_string(str);
+}
+
+pub export fn tix_remote_free(str: [*c]u8) void {
+    free_string(str);
+}
+
+pub export fn tix_add_free(str: [*c]u8) void {
+    free_string(str);
+}
