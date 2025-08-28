@@ -22,6 +22,7 @@ extern "C" {
 #define TIX_COMMAND_FAILED                   -3
 #define TIX_FILE_SYSTEM_ERROR                -4
 #define TIX_INVALID_TICKET_ID                -5
+#define TIX_TICKET_NOT_FOUND                 -6
 #define TIX_UNKNOWN_ERROR                    -99
 
 /* Init-specific errors */
@@ -127,13 +128,14 @@ int tix_move(const char *ticket_id, unsigned char status);
 typedef struct CTicket {
     const char *id;
     const char *title;
+    const char *body;
     unsigned char priority;
     unsigned char status;
 } CTicket;
 
 /**
  * List tickets with optional filters
- * @param statuses String of status characters to filter ('b', 't', 'w', 'd'), NULL for default (todo+doing)
+ * @param statuses String of status characters to filter ('b', 't', 'w', 'd'), NULL for all
  * @param priorities String of priority characters to filter ('a', 'b', 'c', 'z'), NULL for all
  * @param output Pointer to receive array of CTicket structs (must be freed by caller)
  * @param count Pointer to receive number of tickets
@@ -141,8 +143,16 @@ typedef struct CTicket {
  */
 int tix_list(const char *statuses, const char *priorities, CTicket **output, size_t *count);
 
-#ifdef __cplusplus
-}
-#endif
+/**
+ * Show full ticket details
+ * @param ticket_id ULID of the ticket to show
+ * @param output Pointer to receive a CTicket struct (must be freed by caller)
+ * @return 0 = success, -5 = invalid ticket ID, -6 = ticket not found, -1 = out of memory
+ */
+int tix_show(const char *ticket_id, CTicket **output);
 
-#endif /* TIX_H */
+/**
+ * Free a CTicket returned by tix_show
+ * @param ticket Pointer to CTicket to free
+ */
+void tix_show_free(CTicket *ticket);

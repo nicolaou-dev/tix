@@ -5,6 +5,7 @@ const remote = @import("remote.zig");
 const switch_mod = @import("switch.zig");
 const add_mod = @import("add.zig");
 const list = @import("list.zig");
+const show_mod = @import("show.zig");
 
 const CTicket = @import("ticket.zig").CTicket;
 const Priority = @import("priority.zig").Priority;
@@ -198,21 +199,22 @@ pub export fn tix_list(
     }) catch |err| {
         return @intFromEnum(ErrorCode.fromError(err));
     };
+
     defer {
         for (result) |*ticket| ticket.deinit(allocator);
         allocator.free(result);
     }
 
     const out = allocator.alloc(CTicket, result.len) catch return @intFromEnum(ErrorCode.OUT_OF_MEMORY);
-
     errdefer {
-        for (out) |*ct| ct.deinit(allocator);
+        for (out) |ct| ct.deinit(allocator);
         allocator.free(out);
     }
 
     for (result, 0..) |ticket, i| {
-        out[i] = ticket.toCTicket(allocator) catch
+        out[i] = ticket.toCTicket(allocator) catch {
             return @intFromEnum(ErrorCode.OUT_OF_MEMORY);
+        };
     }
 
     if (result.len == 0) {
@@ -225,4 +227,33 @@ pub export fn tix_list(
     count.* = result.len;
 
     return 0;
+}
+
+pub export fn tix_show(id: [*:0]const u8, output: *[*c]CTicket) c_int {
+    const allocator = std.heap.c_allocator;
+
+    const id_slice = std.mem.span(id);
+
+    var ticket = show_mod.show(allocator, id_slice) catch |err| {
+        return @intFromEnum(ErrorCode.fromError(err));
+    };
+    defer ticket.deinit(allocator);
+
+    const c_ticket = ticket.toCTicket(allocator) catch return @intFromEnum(ErrorCode.OUT_OF_MEMORY);
+    errdefer c_ticket.deinit(allocator);
+
+    const ptr = allocator.create(CTicket) catch return @intFromEnum(ErrorCode.OUT_OF_MEMORY);
+
+    ptr.* = c_ticket;
+
+    output.* = ptr;
+
+    return 0;
+}
+
+pub export fn tix_show_free(ticket: ?*CTicket) void {
+    const t = ticket orelse return;
+    const allocator = std.heap.c_allocator;
+    t.*.deinit(allocator);
+    allocator.destroy(t);
 }

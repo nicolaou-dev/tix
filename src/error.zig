@@ -8,6 +8,7 @@ pub const ErrorCode = enum(c_int) {
     COMMAND_FAILED = -3,
     FILE_SYSTEM_ERROR = -4,
     INVALID_TICKET_ID = -5,
+    TICKET_NOT_FOUND = -6,
     UNKNOWN_ERROR = -99,
 
     // Init-specific errors
@@ -64,6 +65,9 @@ pub const ErrorCode = enum(c_int) {
 
             // Move-specific
             error.InvalidStatus => .INVALID_STATUS,
+
+            // Show-specific
+            error.TicketNotFound => .TICKET_NOT_FOUND,
 
             else => .UNKNOWN_ERROR,
         };
