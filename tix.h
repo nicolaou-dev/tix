@@ -8,6 +8,8 @@
 #ifndef TIX_H
 #define TIX_H
 
+#include <stddef.h>  /* for size_t */
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -121,6 +123,23 @@ int tix_switch_project(const char *project, int create);
  */
 int tix_move(const char *ticket_id, unsigned char status);
 
+/* CTicket structure for list output */
+typedef struct CTicket {
+    const char *id;
+    const char *title;
+    unsigned char priority;
+    unsigned char status;
+} CTicket;
+
+/**
+ * List tickets with optional filters
+ * @param statuses String of status characters to filter ('b', 't', 'w', 'd'), NULL for default (todo+doing)
+ * @param priorities String of priority characters to filter ('a', 'b', 'c', 'z'), NULL for all
+ * @param output Pointer to receive array of CTicket structs (must be freed by caller)
+ * @param count Pointer to receive number of tickets
+ * @return 0 = success, -60 = invalid status, -50 = invalid priority, -1 = out of memory
+ */
+int tix_list(const char *statuses, const char *priorities, CTicket **output, size_t *count);
 
 #ifdef __cplusplus
 }

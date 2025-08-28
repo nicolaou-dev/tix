@@ -4,6 +4,11 @@ const config = @import("config.zig");
 const remote = @import("remote.zig");
 const switch_mod = @import("switch.zig");
 const add_mod = @import("add.zig");
+const list = @import("list.zig");
+
+const CTicket = @import("ticket.zig").CTicket;
+const Priority = @import("priority.zig").Priority;
+const Status = @import("status.zig").Status;
 const error_types = @import("error.zig");
 
 // Import error code mapping
@@ -127,24 +132,24 @@ pub export fn tix_add(
 
     // Parse priority: 0 means use default (null), otherwise parse the character
     const priority_enum = if (priority == 0)
-        add_mod.Priority.Z
+        Priority.Z
     else switch (priority) {
-        'a', 'A' => add_mod.Priority.A,
-        'b', 'B' => add_mod.Priority.B,
-        'c', 'C' => add_mod.Priority.C,
-        'z', 'Z' => add_mod.Priority.Z,
+        'a', 'A' => Priority.A,
+        'b', 'B' => Priority.B,
+        'c', 'C' => Priority.C,
+        'z', 'Z' => Priority.Z,
         else => return @intFromEnum(ErrorCode.INVALID_PRIORITY),
     };
 
     const result = add_mod.add(allocator, title_slice, body_slice, priority_enum) catch |err| {
         return @intFromEnum(ErrorCode.fromError(err));
     };
+    defer allocator.free(result);
 
     const c_str = allocator.dupeZ(u8, result) catch {
         allocator.free(result);
         return @intFromEnum(ErrorCode.OUT_OF_MEMORY);
     };
-    allocator.free(result);
 
     output.* = c_str.ptr;
     return 0;
@@ -153,8 +158,7 @@ pub export fn tix_add(
 pub export fn tix_move(ticket_id: [*:0]const u8, status: u8) c_int {
     const ticket_id_slice = std.mem.span(ticket_id);
 
-    const Status = @import("status.zig").Status;
-    const status_enum = Status.fromString(status) orelse {
+    const status_enum = std.meta.intToEnum(Status, status) catch {
         return @intFromEnum(ErrorCode.INVALID_STATUS);
     };
 
@@ -164,4 +168,61 @@ pub export fn tix_move(ticket_id: [*:0]const u8, status: u8) c_int {
     };
 
     return result;
+}
+
+pub export fn tix_list(
+    statuses: [*c]const u8,
+    priorities: [*c]const u8,
+    output: *[*c]CTicket,
+    count: *usize,
+) c_int {
+    const allocator = std.heap.c_allocator;
+
+    // Handle nullable C strings
+    const status_slice = if (statuses) |s| std.mem.span(s) else "";
+    const priority_slice = if (priorities) |p| std.mem.span(p) else "";
+
+    var s_out: [4]Status = undefined;
+    const status_filter = Status.fromSlice(status_slice, &s_out) catch |err| {
+        return @intFromEnum(ErrorCode.fromError(err));
+    };
+
+    var p_out: [4]Priority = undefined;
+    const priority_filter = Priority.fromSlice(priority_slice, &p_out) catch |err| {
+        return @intFromEnum(ErrorCode.fromError(err));
+    };
+
+    const result = list.list(allocator, .{
+        .statuses = if (status_filter.len == 0) null else status_filter,
+        .priorities = if (priority_filter.len == 0) null else priority_filter,
+    }) catch |err| {
+        return @intFromEnum(ErrorCode.fromError(err));
+    };
+    defer {
+        for (result) |*ticket| ticket.deinit(allocator);
+        allocator.free(result);
+    }
+
+    const out = allocator.alloc(CTicket, result.len) catch return @intFromEnum(ErrorCode.OUT_OF_MEMORY);
+
+    errdefer {
+        for (out) |*ct| ct.deinit(allocator);
+        allocator.free(out);
+    }
+
+    for (result, 0..) |ticket, i| {
+        out[i] = ticket.toCTicket(allocator) catch
+            return @intFromEnum(ErrorCode.OUT_OF_MEMORY);
+    }
+
+    if (result.len == 0) {
+        output.* = null;
+        count.* = 0;
+        return 0;
+    }
+
+    output.* = out.ptr;
+    count.* = result.len;
+
+    return 0;
 }

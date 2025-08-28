@@ -2,6 +2,7 @@ const std = @import("std");
 const git = @import("git.zig");
 const ulid = @import("ulid");
 const Status = @import("status.zig").Status;
+const Priority = @import("priority.zig").Priority;
 
 const AddError = error{
     NotARepository,
@@ -9,22 +10,6 @@ const AddError = error{
     OutOfMemory,
     FileSystemError,
     InvalidTitle,
-};
-
-pub const Priority = enum {
-    A, // High
-    B, // Medium
-    C, // Low
-    Z, // Default
-
-    pub fn toString(self: Priority) []const u8 {
-        return switch (self) {
-            .A => "p=a",
-            .B => "p=b",
-            .C => "p=c",
-            .Z => "p=z",
-        };
-    }
 };
 
 pub fn add(
