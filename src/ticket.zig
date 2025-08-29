@@ -54,7 +54,7 @@ pub const Ticket = struct {
         };
     }
 
-    pub fn deinit(self: *Ticket, allocator: std.mem.Allocator) void {
+    pub fn deinit(self: *const Ticket, allocator: std.mem.Allocator) void {
         allocator.free(self.id);
         allocator.free(self.title);
         if (self.body.len > 0) allocator.free(self.body);
@@ -108,7 +108,7 @@ pub const CTicket = extern struct {
     priority: u8,
     status: u8,
 
-    pub fn deinit(self: CTicket, allocator: std.mem.Allocator) void {
+    pub fn deinit(self: *const CTicket, allocator: std.mem.Allocator) void {
         allocator.free(std.mem.span(self.id));
         allocator.free(std.mem.span(self.title));
         allocator.free(std.mem.span(self.body));

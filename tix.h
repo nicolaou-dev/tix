@@ -69,7 +69,7 @@ int tix_config_set(const char *key, const char *value);
 /**
  * Get a configuration value
  * @param key Configuration key
- * @param value_out Output string (must be freed by caller using tix_config_free)
+ * @param value_out Output string (must be freed by caller using tix_config_get_free)
  * @return 0 = success, -20 = invalid key
  */
 int tix_config_get(const char *key, char **value_out);
@@ -78,7 +78,7 @@ int tix_config_get(const char *key, char **value_out);
  * Free a string returned by tix_config_get
  * @param str String to free
  */
-void tix_config_free(char *str);
+void tix_config_get_free(char *str);
 
 /* Ticket management */
 
@@ -102,11 +102,11 @@ void tix_add_free(char *str);
 
 /**
  * List remote repositories
- * @param output Output string (must be freed by caller using tix_remote_free)
  * @param verbose If non-zero, includes URLs in the output
+ * @param output Output string (must be freed by caller using tix_remote_free)
  * @return 0 = success, negative = error
  */
-int tix_remote(char **output, int verbose);
+int tix_remote(int verbose, char **output);
 
 /**
  * Free a string returned by tix_remote
