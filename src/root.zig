@@ -10,25 +10,63 @@ const ffi_move = @import("ffi/ffi_move.zig");
 const ffi_list = @import("ffi/ffi_list.zig");
 const ffi_show = @import("ffi/ffi_show.zig");
 
-// Re-export all FFI functions
-pub const tix_init = ffi_init.tix_init;
+// Export all FFI functions for C
+pub export fn tix_init() c_int {
+    return ffi_init.tix_init();
+}
 
-pub const tix_config_get = ffi_config.tix_config_get;
-pub const tix_config_set = ffi_config.tix_config_set;
-pub const tix_config_get_free = ffi_config.tix_config_get_free;
+pub export fn tix_config_set(key: [*:0]const u8, value: [*:0]const u8) c_int {
+    return ffi_config.tix_config_set(key, value);
+}
 
-pub const tix_remote = ffi_remote.tix_remote;
-pub const tix_remote_free = ffi_remote.tix_remote_free;
+pub export fn tix_config_get(key: [*:0]const u8, output: *[*c]u8) c_int {
+    return ffi_config.tix_config_get(key, output);
+}
 
-pub const tix_switch = ffi_switch.tix_switch;
+pub export fn tix_config_get_free(str: [*c]u8) void {
+    ffi_config.tix_config_get_free(str);
+}
 
-pub const tix_add = ffi_add.tix_add;
-pub const tix_add_free = ffi_add.tix_add_free;
+pub export fn tix_remote(verbose: c_int, output: *[*c]u8) c_int {
+    return ffi_remote.tix_remote(verbose, output);
+}
 
-pub const tix_move = ffi_move.tix_move;
+pub export fn tix_remote_free(str: [*c]u8) void {
+    ffi_remote.tix_remote_free(str);
+}
 
-pub const tix_list = ffi_list.tix_list;
-pub const tix_list_free = ffi_list.tix_list_free;
+pub export fn tix_remote_add(name: [*:0]const u8, url: [*:0]const u8) c_int {
+    return ffi_remote.tix_remote_add(name, url);
+}
 
-pub const tix_show = ffi_show.tix_show;
-pub const tix_show_free = ffi_show.tix_show_free;
+pub export fn tix_switch_project(project: [*:0]const u8, create: c_int) c_int {
+    return ffi_switch.tix_switch_project(project, create);
+}
+
+pub export fn tix_add(title: [*:0]const u8, body: [*:0]const u8, priority: u8, output: *[*c]u8) c_int {
+    return ffi_add.tix_add(title, body, priority, output);
+}
+
+pub export fn tix_add_free(str: [*c]u8) void {
+    ffi_add.tix_add_free(str);
+}
+
+pub export fn tix_move(ticket_id: [*:0]const u8, status: u8) c_int {
+    return ffi_move.tix_move(ticket_id, status);
+}
+
+pub export fn tix_list(statuses: [*c]const u8, priorities: [*c]const u8, output: *[*c]ffi_list.CTicket, count: *usize) c_int {
+    return ffi_list.tix_list(statuses, priorities, output, count);
+}
+
+pub export fn tix_list_free(tickets: [*c]ffi_list.CTicket, count: usize) void {
+    ffi_list.tix_list_free(tickets, count);
+}
+
+pub export fn tix_show(id: [*:0]const u8, output: *[*c]ffi_show.CTicket) c_int {
+    return ffi_show.tix_show(id, output);
+}
+
+pub export fn tix_show_free(ticket: ?*ffi_show.CTicket) void {
+    ffi_show.tix_show_free(ticket);
+}

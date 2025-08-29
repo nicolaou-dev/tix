@@ -1,11 +1,11 @@
 const std = @import("std");
 const list = @import("../list.zig");
-const CTicket = @import("../ticket.zig").CTicket;
+pub const CTicket = @import("../ticket.zig").CTicket;
 const Priority = @import("../priority.zig").Priority;
 const Status = @import("../status.zig").Status;
 const ErrorCode = @import("../error.zig").ErrorCode;
 
-pub export fn tix_list(
+pub fn tix_list(
     statuses: [*c]const u8,
     priorities: [*c]const u8,
     output: *[*c]CTicket,
@@ -63,7 +63,7 @@ pub export fn tix_list(
     return 0;
 }
 
-pub export fn tix_list_free(tickets: [*c]CTicket, count: usize) void {
+pub fn tix_list_free(tickets: [*c]CTicket, count: usize) void {
     if (tickets == null) return;
     const allocator = std.heap.c_allocator;
     const slice = tickets[0..count];

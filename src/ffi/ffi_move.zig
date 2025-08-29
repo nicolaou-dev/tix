@@ -3,7 +3,7 @@ const move_mod = @import("../move.zig");
 const Status = @import("../status.zig").Status;
 const ErrorCode = @import("../error.zig").ErrorCode;
 
-pub export fn tix_move(ticket_id: [*:0]const u8, status: u8) c_int {
+pub fn tix_move(ticket_id: [*:0]const u8, status: u8) c_int {
     const ticket_id_slice = std.mem.span(ticket_id);
 
     const status_enum = std.meta.intToEnum(Status, status) catch {

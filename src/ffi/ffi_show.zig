@@ -1,9 +1,9 @@
 const std = @import("std");
 const show_mod = @import("../show.zig");
-const CTicket = @import("../ticket.zig").CTicket;
+pub const CTicket = @import("../ticket.zig").CTicket;
 const ErrorCode = @import("../error.zig").ErrorCode;
 
-pub export fn tix_show(id: [*:0]const u8, output: *[*c]CTicket) c_int {
+pub fn tix_show(id: [*:0]const u8, output: *[*c]CTicket) c_int {
     const allocator = std.heap.c_allocator;
 
     const id_slice = std.mem.span(id);
@@ -25,7 +25,7 @@ pub export fn tix_show(id: [*:0]const u8, output: *[*c]CTicket) c_int {
     return 0;
 }
 
-pub export fn tix_show_free(ticket: ?*CTicket) void {
+pub fn tix_show_free(ticket: ?*CTicket) void {
     const t = ticket orelse return;
     const allocator = std.heap.c_allocator;
     t.deinit(allocator);

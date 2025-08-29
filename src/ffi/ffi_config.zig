@@ -3,7 +3,7 @@ const helper = @import("helper.zig");
 const config = @import("../config.zig");
 const ErrorCode = @import("../error.zig").ErrorCode;
 
-pub export fn tix_config_set(key: [*:0]const u8, value: [*:0]const u8) c_int {
+pub fn tix_config_set(key: [*:0]const u8, value: [*:0]const u8) c_int {
     const allocator = std.heap.c_allocator;
 
     const key_slice = std.mem.span(key);
@@ -16,7 +16,7 @@ pub export fn tix_config_set(key: [*:0]const u8, value: [*:0]const u8) c_int {
     return 0;
 }
 
-pub export fn tix_config_get(key: [*:0]const u8, output: *[*c]u8) c_int {
+pub fn tix_config_get(key: [*:0]const u8, output: *[*c]u8) c_int {
     const allocator = std.heap.c_allocator;
 
     const key_slice = std.mem.span(key);
@@ -35,6 +35,6 @@ pub export fn tix_config_get(key: [*:0]const u8, output: *[*c]u8) c_int {
     return 0;
 }
 
-pub export fn tix_config_get_free(str: [*c]u8) void {
+pub fn tix_config_get_free(str: [*c]u8) void {
     helper.free_string(str);
 }

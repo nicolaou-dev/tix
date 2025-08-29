@@ -6,7 +6,7 @@ const ErrorCode = @import("../error.zig").ErrorCode;
 
 /// Adds a new ticket with the given title, body, and priority.
 /// Priority: 'a', 'b', 'c', 'z', or 0 for default (z)
-pub export fn tix_add(
+pub fn tix_add(
     title: [*:0]const u8,
     body: [*:0]const u8,
     priority: u8,
@@ -32,6 +32,6 @@ pub export fn tix_add(
     return 0;
 }
 
-pub export fn tix_add_free(str: [*c]u8) void {
+pub fn tix_add_free(str: [*c]u8) void {
     helper.free_string(str);
 }
