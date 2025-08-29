@@ -15,12 +15,12 @@ pub fn list(allocator: std.mem.Allocator, filters: Filters) ListError![]Ticket {
     var dir = std.fs.cwd().openDir(".tix", .{}) catch return ListError.FileSystemError;
     defer dir.close();
 
-    var tickets = std.ArrayList(Ticket).init(allocator);
+    var tickets = std.ArrayList(Ticket){};
     errdefer {
         for (tickets.items) |*t| {
             t.deinit(allocator);
         }
-        tickets.deinit();
+        tickets.deinit(allocator);
     }
 
     var it = dir.iterate();
@@ -55,10 +55,10 @@ pub fn list(allocator: std.mem.Allocator, filters: Filters) ListError![]Ticket {
         }
         const ticket = Ticket.read(allocator, dir, entry.name, status.?, priority.?) catch return ListError.FileSystemError;
 
-        tickets.append(ticket) catch return ListError.FileSystemError;
+        tickets.append(allocator, ticket) catch return ListError.FileSystemError;
     }
 
-    return tickets.toOwnedSlice() catch return ListError.FileSystemError;
+    return tickets.toOwnedSlice(allocator) catch return ListError.FileSystemError;
 }
 
 fn getStatus(

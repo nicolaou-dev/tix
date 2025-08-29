@@ -28,7 +28,7 @@
 
     // Tracks the earliest Zig version that the package considers to be a
     // supported use case.
-    .minimum_zig_version = "0.14.1",
+    .minimum_zig_version = "0.15.1",
 
     // This field is optional.
     // Each dependency must either provide a `url` and `hash`, or a `path`.
@@ -38,7 +38,7 @@
     .dependencies = .{
         .ulid = .{
             .url = "https://github.com/nicolaou-dev/ulid.zig/archive/refs/heads/main.tar.gz",
-            .hash = "ulid-0.0.0-LsLBOjeyAACGoTi0L9sxhFdlkqSczvzdjkgCiyc6MjsS",
+            .hash = "ulid-0.0.0-LsLBOqquAAB_rks94ZqxtwkcCJPz6qE5tM-xYCEzlzBg",
         },
     },
     .paths = .{

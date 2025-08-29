@@ -43,18 +43,18 @@ pub fn config(
     key: []const u8,
     value: ?[]const u8,
 ) GitError![]const u8 {
-    var argv = std.ArrayList([]const u8).init(allocator);
-    defer argv.deinit();
+    var argv = std.ArrayList([]const u8){};
+    defer argv.deinit(allocator);
 
-    try argv.append("git");
-    try argv.append("-C");
-    try argv.append(".tix");
-    try argv.append("config");
-    try argv.append("--local");
-    try argv.append(key);
+    try argv.append(allocator, "git");
+    try argv.append(allocator, "-C");
+    try argv.append(allocator, ".tix");
+    try argv.append(allocator, "config");
+    try argv.append(allocator, "--local");
+    try argv.append(allocator, key);
 
     if (value) |val| {
-        try argv.append(val);
+        try argv.append(allocator, val);
     }
 
     const result = std.process.Child.run(.{ .allocator = allocator, .argv = argv.items }) catch {
@@ -98,17 +98,17 @@ pub fn switchBranch(
     create: bool,
 ) GitError!void {
     // Build argv with git switch command and all paths
-    var argv = std.ArrayList([]const u8).init(allocator);
-    defer argv.deinit();
+    var argv = std.ArrayList([]const u8){};
+    defer argv.deinit(allocator);
 
-    try argv.append("git");
-    try argv.append("-C");
-    try argv.append(".tix");
-    try argv.append("switch");
+    try argv.append(allocator, "git");
+    try argv.append(allocator, "-C");
+    try argv.append(allocator, ".tix");
+    try argv.append(allocator, "switch");
     if (create) {
-        try argv.append("-c");
+        try argv.append(allocator, "-c");
     }
-    try argv.append(branch);
+    try argv.append(allocator, branch);
 
     const result = std.process.Child.run(.{
         .allocator = allocator,
@@ -166,15 +166,15 @@ pub fn remote(
     allocator: std.mem.Allocator,
     verbose: bool,
 ) GitError![]const u8 {
-    var argv = std.ArrayList([]const u8).init(allocator);
-    defer argv.deinit();
+    var argv = std.ArrayList([]const u8){};
+    defer argv.deinit(allocator);
 
-    try argv.append("git");
-    try argv.append("-C");
-    try argv.append(".tix");
-    try argv.append("remote");
+    try argv.append(allocator, "git");
+    try argv.append(allocator, "-C");
+    try argv.append(allocator, ".tix");
+    try argv.append(allocator, "remote");
     if (verbose) {
-        try argv.append("-v");
+        try argv.append(allocator, "-v");
     }
 
     const result = std.process.Child.run(.{
@@ -247,16 +247,16 @@ pub fn add(
     allocator: std.mem.Allocator,
     paths: []const []const u8,
 ) GitError!void {
-    var argv = std.ArrayList([]const u8).init(allocator);
-    defer argv.deinit();
+    var argv = std.ArrayList([]const u8){};
+    defer argv.deinit(allocator);
 
-    try argv.append("git");
-    try argv.append("-C");
-    try argv.append(".tix");
-    try argv.append("add");
+    try argv.append(allocator, "git");
+    try argv.append(allocator, "-C");
+    try argv.append(allocator, ".tix");
+    try argv.append(allocator, "add");
 
     for (paths) |path| {
-        try argv.append(path);
+        try argv.append(allocator, path);
     }
 
     const result = std.process.Child.run(.{
@@ -333,13 +333,13 @@ pub fn clean(
 pub fn log(
     allocator: std.mem.Allocator,
 ) GitError![]const u8 {
-    var argv = std.ArrayList([]const u8).init(allocator);
-    defer argv.deinit();
+    var argv = std.ArrayList([]const u8){};
+    defer argv.deinit(allocator);
 
-    try argv.append("git");
-    try argv.append("-C");
-    try argv.append(".tix");
-    try argv.append("log");
+    try argv.append(allocator, "git");
+    try argv.append(allocator, "-C");
+    try argv.append(allocator, ".tix");
+    try argv.append(allocator, "log");
 
     const result = std.process.Child.run(.{
         .allocator = allocator,

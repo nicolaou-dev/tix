@@ -9,14 +9,18 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    const static_lib = b.addStaticLibrary(.{
+    const static_lib = b.addLibrary(.{
         .name = "tix",
-        .root_source_file = b.path("src/root.zig"),
-        .target = target,
-        .optimize = optimize,
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/root.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "ulid", .module = ulid.module("ulid") },
+            },
+        }),
     });
     static_lib.linkLibC();
-    static_lib.root_module.addImport("ulid", ulid.module("ulid"));
 
     b.installArtifact(static_lib);
 
@@ -24,12 +28,16 @@ pub fn build(b: *std.Build) void {
     b.installFile("tix.h", "include/tix.h");
 
     const tests = b.addTest(.{
-        .root_source_file = b.path("src/root.zig"),
-        .target = target,
-        .optimize = optimize,
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/root.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "ulid", .module = ulid.module("ulid") },
+            },
+        }),
     });
     tests.linkLibC();
-    tests.root_module.addImport("ulid", ulid.module("ulid"));
 
     const run_tests = b.addRunArtifact(tests);
     const test_step = b.step("test", "Run unit tests");
@@ -52,14 +60,18 @@ pub fn build(b: *std.Build) void {
 
         const resolved_target = b.resolveTargetQuery(target_query);
 
-        const lib = b.addStaticLibrary(.{
+        const lib = b.addLibrary(.{
             .name = "tix",
-            .root_source_file = b.path("src/root.zig"),
-            .target = resolved_target,
-            .optimize = .ReleaseSafe,
+            .root_module = b.createModule(.{
+                .root_source_file = b.path("src/root.zig"),
+                .target = resolved_target,
+                .optimize = .ReleaseSafe,
+                .imports = &.{
+                    .{ .name = "ulid", .module = ulid.module("ulid") },
+                },
+            }),
         });
         lib.linkLibC();
-        lib.root_module.addImport("ulid", ulid.module("ulid"));
 
         const install = b.addInstallArtifact(lib, .{
             .dest_dir = .{ .override = .{ .custom = platform } },
