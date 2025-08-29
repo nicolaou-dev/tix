@@ -218,6 +218,16 @@ int tix_show_status(const char *ticket_id);
 int tix_show_priority(const char *ticket_id);
 
 /**
+ * Amend ticket properties (title, body, priority)
+ * @param ticket_id ULID of the ticket to amend
+ * @param title New title (empty string to leave unchanged)
+ * @param body New body (empty string to leave unchanged)
+ * @param priority New priority (0 to leave unchanged)
+ * @return 0 = success, -5 = invalid ticket ID, -50 = invalid priority
+ */
+int tix_amend(const char *ticket_id, const char *title, const char *body, unsigned char priority);
+
+/**
  * Free a CTicket array returned by tix_list
  * @param tickets Pointer to CTicket array to free
  * @param count Number of tickets in the array
