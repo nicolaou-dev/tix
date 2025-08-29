@@ -176,6 +176,48 @@ int tix_show(const char *ticket_id, CTicket **output);
 void tix_show_free(CTicket *ticket);
 
 /**
+ * Show only the title of a ticket
+ * @param ticket_id ULID of the ticket to show
+ * @param output Pointer to receive the title string (must be freed by caller using tix_show_title_free)
+ * @return 0 = success, -5 = invalid ticket ID, -6 = ticket not found, -1 = out of memory
+ */
+int tix_show_title(const char *ticket_id, char **output);
+
+/**
+ * Free a string returned by tix_show_title
+ * @param str String to free
+ */
+void tix_show_title_free(char *str);
+
+/**
+ * Show only the body of a ticket
+ * @param ticket_id ULID of the ticket to show
+ * @param output Pointer to receive the body string (must be freed by caller using tix_show_body_free)
+ * @return 0 = success, -5 = invalid ticket ID, -6 = ticket not found, -1 = out of memory
+ */
+int tix_show_body(const char *ticket_id, char **output);
+
+/**
+ * Free a string returned by tix_show_body
+ * @param str String to free
+ */
+void tix_show_body_free(char *str);
+
+/**
+ * Show only the status of a ticket
+ * @param ticket_id ULID of the ticket to show
+ * @return Status character ('b', 't', 'w', 'd') on success, negative error code on failure
+ */
+int tix_show_status(const char *ticket_id);
+
+/**
+ * Show only the priority of a ticket
+ * @param ticket_id ULID of the ticket to show
+ * @return Priority character ('a', 'b', 'c', 'z') on success, negative error code on failure
+ */
+int tix_show_priority(const char *ticket_id);
+
+/**
  * Free a CTicket array returned by tix_list
  * @param tickets Pointer to CTicket array to free
  * @param count Number of tickets in the array

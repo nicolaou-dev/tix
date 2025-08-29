@@ -38,7 +38,7 @@
     .dependencies = .{
         .ulid = .{
             .url = "https://github.com/nicolaou-dev/ulid.zig/archive/refs/heads/main.tar.gz",
-            .hash = "ulid-0.0.0-LsLBOqquAAB_rks94ZqxtwkcCJPz6qE5tM-xYCEzlzBg",
+            .hash = "ulid-0.0.0-LsLBOiK2AADh7ySVJS5VS2qqyF_31iLk_L25dKgrFKqz",
         },
     },
     .paths = .{

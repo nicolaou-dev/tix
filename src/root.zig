@@ -70,3 +70,27 @@ pub export fn tix_show(id: [*:0]const u8, output: *[*c]ffi_show.CTicket) c_int {
 pub export fn tix_show_free(ticket: ?*ffi_show.CTicket) void {
     ffi_show.tix_show_free(ticket);
 }
+
+pub export fn tix_show_title(id: [*:0]const u8, output: *[*c]u8) c_int {
+    return ffi_show.tix_show_title(id, output);
+}
+
+pub export fn tix_show_title_free(str: [*c]u8) void {
+    ffi_show.tix_show_title_free(str);
+}
+
+pub export fn tix_show_body(id: [*:0]const u8, output: *[*c]u8) c_int {
+    return ffi_show.tix_show_body(id, output);
+}
+
+pub export fn tix_show_body_free(str: [*c]u8) void {
+    ffi_show.tix_show_body_free(str);
+}
+
+pub export fn tix_show_status(id: [*:0]const u8) c_int {
+    return ffi_show.tix_show_status(id);
+}
+
+pub export fn tix_show_priority(id: [*:0]const u8) c_int {
+    return ffi_show.tix_show_priority(id);
+}
