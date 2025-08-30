@@ -105,15 +105,15 @@ test "list active tickets by default" {
     // Create tickets with different statuses
     const todo_id = try add(allocator, "Todo Task", "This is todo", .A);
     defer allocator.free(todo_id);
-    _ = try move(todo_id, .Todo);
+    _ = try move(allocator, todo_id, .Todo);
 
     const doing_id = try add(allocator, "Doing Task", "This is doing", .B);
     defer allocator.free(doing_id);
-    _ = try move(doing_id, .Doing);
+    _ = try move(allocator, doing_id, .Doing);
 
     const done_id = try add(allocator, "Done Task", "This is done", .C);
     defer allocator.free(done_id);
-    _ = try move(done_id, .Done);
+    _ = try move(allocator, done_id, .Done);
 
     const backlog_id = try add(allocator, "Backlog Task", "This is backlog", .Z);
     defer allocator.free(backlog_id);
@@ -162,19 +162,19 @@ test "list filter by status" {
     // Create multiple todo tickets
     const todo1_id = try add(allocator, "Todo 1", "First todo", .A);
     defer allocator.free(todo1_id);
-    _ = try move(todo1_id, .Todo);
+    _ = try move(allocator, todo1_id, .Todo);
 
     const todo2_id = try add(allocator, "Todo 2", "Second todo", .B);
     defer allocator.free(todo2_id);
-    _ = try move(todo2_id, .Todo);
+    _ = try move(allocator, todo2_id, .Todo);
 
     const doing_id = try add(allocator, "Doing Task", "This is doing", .C);
     defer allocator.free(doing_id);
-    _ = try move(doing_id, .Doing);
+    _ = try move(allocator, doing_id, .Doing);
 
     const done_id = try add(allocator, "Done Task", "This is done", .Z);
     defer allocator.free(done_id);
-    _ = try move(done_id, .Done);
+    _ = try move(allocator, done_id, .Done);
 
     // Test 1: Filter for todo only
     {
@@ -236,19 +236,19 @@ test "list filter by priority" {
     // Create tickets with different priorities
     const high1_id = try add(allocator, "High Priority 1", "Important", .A);
     defer allocator.free(high1_id);
-    _ = try move(high1_id, .Todo);
+    _ = try move(allocator, high1_id, .Todo);
 
     const high2_id = try add(allocator, "High Priority 2", "Also important", .A);
     defer allocator.free(high2_id);
-    _ = try move(high2_id, .Doing);
+    _ = try move(allocator, high2_id, .Doing);
 
     const medium_id = try add(allocator, "Medium Priority", "Medium urgent", .B);
     defer allocator.free(medium_id);
-    _ = try move(medium_id, .Todo);
+    _ = try move(allocator, medium_id, .Todo);
 
     const low_id = try add(allocator, "Low Priority", "Not urgent", .Z);
     defer allocator.free(low_id);
-    _ = try move(low_id, .Todo);
+    _ = try move(allocator, low_id, .Todo);
 
     // Test 1: Filter for priority A only (with default status filter)
     {
@@ -310,15 +310,15 @@ test "list combined filters" {
     // Create tickets with various combinations
     const todo_a_id = try add(allocator, "Todo A", "High priority todo", .A);
     defer allocator.free(todo_a_id);
-    _ = try move(todo_a_id, .Todo);
+    _ = try move(allocator, todo_a_id, .Todo);
 
     const todo_b_id = try add(allocator, "Todo B", "Medium priority todo", .B);
     defer allocator.free(todo_b_id);
-    _ = try move(todo_b_id, .Todo);
+    _ = try move(allocator, todo_b_id, .Todo);
 
     const doing_a_id = try add(allocator, "Doing A", "High priority doing", .A);
     defer allocator.free(doing_a_id);
-    _ = try move(doing_a_id, .Doing);
+    _ = try move(allocator, doing_a_id, .Doing);
 
     // Filter for Todo status AND priority A
     const filters = Filters{

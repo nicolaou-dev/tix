@@ -1,8 +1,10 @@
 const std = @import("std");
+const git = @import("git.zig");
 const ulid = @import("ulid");
 const Status = @import("status.zig").Status;
 
 const MoveError = error{
+    NotARepository,
     OutOfMemory,
     FileSystemError,
     InvalidTicketID,
@@ -10,9 +12,14 @@ const MoveError = error{
 };
 
 pub fn move(
+    allocator: std.mem.Allocator,
     ticket_id: []const u8,
     status: Status,
 ) MoveError!i32 {
+    errdefer {
+        git.resetHard(allocator) catch {};
+        git.clean(allocator) catch {};
+    }
     if (!ulid.isValid(ticket_id)) return MoveError.InvalidTicketID;
 
     var ticket_path_buf: [256]u8 = undefined;
@@ -28,6 +35,28 @@ pub fn move(
 
     dir.rename(current_status, status.toString()) catch {
         return MoveError.CommandFailed;
+    };
+
+    const paths = [_][]const u8{ticket_id};
+
+    git.add(allocator, &paths) catch |err| switch (err) {
+        error.NotARepository => return MoveError.NotARepository,
+        error.OutOfMemory => return MoveError.OutOfMemory,
+        else => return MoveError.CommandFailed,
+    };
+
+    const current_status_enum = std.meta.intToEnum(Status, current_status[2]) catch {
+        return MoveError.CommandFailed;
+    };
+
+    var commit_message_buf: [256]u8 = undefined;
+    const commit_message = std.fmt.bufPrint(&commit_message_buf, "{s}: status {s} -> {s}", .{ ticket_id, @tagName(current_status_enum), @tagName(status) }) catch {
+        return MoveError.OutOfMemory;
+    };
+
+    git.commit(allocator, commit_message) catch |err| switch (err) {
+        error.OutOfMemory => return MoveError.OutOfMemory,
+        else => return MoveError.CommandFailed,
     };
 
     return 0;
@@ -75,7 +104,7 @@ test "move update ticket status" {
     };
     
     // Move to Doing status
-    const result = try move(id, .Doing);
+    const result = try move(allocator, id, .Doing);
     try std.testing.expect(result == 0);
     
     // Check that old status file (backlog) no longer exists

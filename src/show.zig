@@ -94,7 +94,7 @@ test "show full ticket details" {
     defer allocator.free(ticket_id);
 
     // Move it to Todo status
-    _ = try move(ticket_id, .Todo);
+    _ = try move(allocator, ticket_id, .Todo);
 
     // Show the ticket
     var t = try show(allocator, ticket_id);
@@ -123,7 +123,7 @@ test "show individual fields" {
     const ticket_id = try add(allocator, "Field Test Title", "Field test body", .B);
     defer allocator.free(ticket_id);
 
-    _ = try move(ticket_id, .Doing);
+    _ = try move(allocator, ticket_id, .Doing);
 
     // Test showTitle
     const title = try showTitle(allocator, ticket_id);
