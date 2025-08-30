@@ -13,27 +13,6 @@ pub const Ticket = struct {
     priority: Priority,
     body: []const u8 = "",
 
-    pub fn read(allocator: std.mem.Allocator, dir: std.fs.Dir, id: []const u8, status: Status, priority: Priority) TicketError!Ticket {
-        var ticket_dir = dir.openDir(id, .{}) catch return TicketError.FileSystemError;
-        defer ticket_dir.close();
-
-        // read title.md contents
-        const title = getTitle(ticket_dir, allocator) catch return TicketError.FileSystemError;
-
-        const duplicated_id = allocator.dupe(u8, id) catch {
-            allocator.free(title);
-            return TicketError.FileSystemError;
-        };
-        const ticket = Ticket{
-            .id = duplicated_id,
-            .title = title,
-            .status = status,
-            .priority = priority,
-        };
-
-        return ticket;
-    }
-
     pub fn toCTicket(self: *const Ticket, allocator: std.mem.Allocator) TicketError!CTicket {
         const c_id = allocator.dupeZ(u8, self.id) catch return TicketError.FileSystemError;
         const c_title = allocator.dupeZ(u8, self.title) catch {

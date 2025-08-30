@@ -23,6 +23,7 @@ pub fn list(allocator: std.mem.Allocator, filters: Filters) ListError![]Ticket {
         tickets.deinit(allocator);
     }
 
+    const indexOfScalar = std.mem.indexOfScalar;
     var it = dir.iterate();
     while (it.next() catch return ListError.FileSystemError) |entry| {
         // Skip non-ticket directories
@@ -30,63 +31,41 @@ pub fn list(allocator: std.mem.Allocator, filters: Filters) ListError![]Ticket {
 
         if (!ulid.isValid(entry.name)) continue;
 
-        const indexOfScalar = std.mem.indexOfScalar;
+        var td = dir.openDir(entry.name, .{}) catch return ListError.FileSystemError;
+        defer td.close();
 
         var status: ?Status = null;
-        if (filters.statuses) |sf| {
-            status = try getStatus(entry.name, dir);
-            if (indexOfScalar(Status, sf, status.?) == null)
-                continue;
-        }
-
         var priority: ?Priority = null;
+        var td_it = td.iterate();
+        while (td_it.next() catch return ListError.FileSystemError) |sub_entry| {
+            if (sub_entry.kind != .file) continue;
+
+            switch (sub_entry.name[0]) {
+                'p' => priority = std.meta.intToEnum(Priority, sub_entry.name[2]) catch continue,
+                's' => status = std.meta.intToEnum(Status, sub_entry.name[2]) catch continue,
+
+                else => continue,
+            }
+
+            if (status != null and priority != null) break;
+        }
+        if (filters.statuses) |sf| {
+            if (indexOfScalar(Status, sf, status.?) == null) continue;
+        }
         if (filters.priorities) |pf| {
-            priority = try getPriority(entry.name, dir);
-            if (indexOfScalar(Priority, pf, priority.?) == null)
-                continue;
+            if (indexOfScalar(Priority, pf, priority.?) == null) continue;
         }
+        const title = td.readFileAlloc(allocator, "title.md", 1024) catch return ListError.FileSystemError;
 
-        if (priority == null) {
-            priority = getPriority(entry.name, dir) catch continue;
-        }
-
-        if (status == null) {
-            status = getStatus(entry.name, dir) catch continue;
-        }
-        const ticket = Ticket.read(allocator, dir, entry.name, status.?, priority.?) catch return ListError.FileSystemError;
-
-        tickets.append(allocator, ticket) catch return ListError.FileSystemError;
+        tickets.append(allocator, .{
+            .id = allocator.dupe(u8, entry.name) catch return ListError.FileSystemError,
+            .title = title,
+            .status = status.?,
+            .priority = priority.?,
+        }) catch return ListError.FileSystemError;
     }
 
     return tickets.toOwnedSlice(allocator) catch return ListError.FileSystemError;
-}
-
-fn getStatus(
-    id: []const u8,
-    dir: std.fs.Dir,
-) !Status {
-    for (std.enums.values(Status)) |s| {
-        const status = s.toString();
-        var status_buf: [256]u8 = undefined;
-        const status_path = std.fmt.bufPrint(&status_buf, "{s}/{s}", .{ id, status }) catch continue;
-        dir.access(status_path, .{}) catch continue;
-        return s;
-    }
-    return ListError.FileSystemError;
-}
-
-fn getPriority(
-    id: []const u8,
-    dir: std.fs.Dir,
-) !Priority {
-    for (std.enums.values(Priority)) |p| {
-        const priority = p.toString();
-        var priority_buf: [256]u8 = undefined;
-        const priority_path = std.fmt.bufPrint(&priority_buf, "{s}/{s}", .{ id, priority }) catch continue;
-        dir.access(priority_path, .{}) catch continue;
-        return p;
-    }
-    return ListError.FileSystemError;
 }
 
 test "list active tickets by default" {
