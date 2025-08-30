@@ -12,6 +12,7 @@ const ffi_show = @import("ffi/ffi_show.zig");
 const ffi_amend = @import("ffi/ffi_amend.zig");
 const ffi_undo = @import("ffi/ffi_undo.zig");
 const ffi_redo = @import("ffi/ffi_redo.zig");
+const ffi_projects = @import("ffi/ffi_projects.zig");
 
 // Export all FFI functions for C
 pub export fn tix_init() c_int {
@@ -108,4 +109,12 @@ pub export fn tix_undo() c_int {
 
 pub export fn tix_redo() c_int {
     return ffi_redo.tix_redo();
+}
+
+pub export fn tix_projects(output: *[*c][*c]u8, count: *usize) c_int {
+    return ffi_projects.tix_projects(output, count);
+}
+
+pub export fn tix_projects_free(output: [*c][*c]u8, count: usize) void {
+    ffi_projects.tix_projects_free(output, count);
 }

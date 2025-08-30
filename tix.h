@@ -240,6 +240,21 @@ int tix_undo(void);
 int tix_redo(void);
 
 /**
+ * List all local projects (branches)
+ * @param output Array of branch names, first element is current branch (must be freed by caller using tix_projects_free)
+ * @param count Number of branches
+ * @return 0 = success, -2 = not a repository, -3 = command failed
+ */
+int tix_projects(char ***output, size_t *count);
+
+/**
+ * Free an array returned by tix_projects
+ * @param output Array to free
+ * @param count Number of elements
+ */
+void tix_projects_free(char **output, size_t count);
+
+/**
  * Free a CTicket array returned by tix_list
  * @param tickets Pointer to CTicket array to free
  * @param count Number of tickets in the array

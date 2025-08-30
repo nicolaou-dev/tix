@@ -94,7 +94,7 @@ pub fn config(
 
 pub fn switchBranch(
     allocator: std.mem.Allocator,
-    branch: []const u8,
+    branch_name: []const u8,
     create: bool,
 ) GitError!void {
     // Build argv with git switch command and all paths
@@ -108,7 +108,7 @@ pub fn switchBranch(
     if (create) {
         try argv.append(allocator, "-c");
     }
-    try argv.append(allocator, branch);
+    try argv.append(allocator, branch_name);
 
     const result = std.process.Child.run(.{
         .allocator = allocator,
@@ -372,6 +372,37 @@ pub fn log(
     const result = std.process.Child.run(.{
         .allocator = allocator,
         .argv = argv.items,
+    }) catch {
+        return GitError.CommandFailed;
+    };
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+
+    const err_output = result.stderr;
+
+    const not_a_repo = "not a git repository";
+
+    if (indexOf(u8, err_output, not_a_repo) != null) {
+        return GitError.NotARepository;
+    }
+
+    if (result.term.Exited != 0) {
+        return GitError.CommandFailed;
+    }
+
+    const output = allocator.dupe(u8, result.stdout) catch {
+        return GitError.OutOfMemory;
+    };
+
+    return output;
+}
+
+pub fn branch(
+    allocator: std.mem.Allocator,
+) GitError![]const u8 {
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "git", "-C", ".tix", "branch" },
     }) catch {
         return GitError.CommandFailed;
     };
