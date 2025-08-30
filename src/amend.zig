@@ -190,7 +190,7 @@ test "amend with no changes does not commit" {
     defer allocator.free(id);
 
     // Get initial commit count
-    const log_before = try git.log(allocator);
+    const log_before = try git.log(allocator, false, null, null);
     defer allocator.free(log_before);
     const commits_before = std.mem.count(u8, log_before, "commit");
 
@@ -198,7 +198,7 @@ test "amend with no changes does not commit" {
     try amend(allocator, id, null, null, null);
 
     // Verify no new commit was created
-    const log_after = try git.log(allocator);
+    const log_after = try git.log(allocator, false, null, null);
     defer allocator.free(log_after);
     const commits_after = std.mem.count(u8, log_after, "commit");
 
@@ -238,7 +238,7 @@ test "amend commit message format is clean" {
     try amend(allocator, id, "New Title", "New body", .A);
 
     // Check that the commit message is properly formatted (no corruption)
-    const log = try git.log(allocator);
+    const log = try git.log(allocator, false, null, null);
     defer allocator.free(log);
 
     // Verify commit message contains expected format

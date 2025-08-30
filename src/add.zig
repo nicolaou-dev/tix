@@ -138,7 +138,7 @@ test "add task" {
     try ticket_dir.access("s=b", .{});
     try ticket_dir.access("p=a", .{});
 
-    const log = try git.log(allocator);
+    const log = try git.log(allocator, false, null, null);
     defer allocator.free(log);
 
     try std.testing.expect(std.mem.indexOf(u8, log, id) != null);

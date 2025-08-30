@@ -255,6 +255,22 @@ int tix_projects(char ***output, size_t *count);
 void tix_projects_free(char **output, size_t count);
 
 /**
+ * Show commit history
+ * @param output Output string with log (must be freed by caller using tix_log_free)
+ * @param oneline Non-zero for oneline format
+ * @param limit Maximum number of commits (0 for no limit)
+ * @param since Show commits since date (e.g. "2 days ago"), NULL for all
+ * @return 0 = success, -2 = not a repository, -3 = command failed
+ */
+int tix_log(char **output, int oneline, int limit, const char *since);
+
+/**
+ * Free a string returned by tix_log
+ * @param str String to free
+ */
+void tix_log_free(char *str);
+
+/**
  * Free a CTicket array returned by tix_list
  * @param tickets Pointer to CTicket array to free
  * @param count Number of tickets in the array

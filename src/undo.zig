@@ -38,20 +38,20 @@ test "undo reverts last commit" {
     const ticket_id = try add(allocator, title, "Test body", Priority.B);
     defer allocator.free(ticket_id);
 
-    const log_before = try git.log(allocator);
+    const log_before = try git.log(allocator, false, null, null);
     defer allocator.free(log_before);
     const commits_before = std.mem.count(u8, log_before, "commit ");
 
     _ = try move(allocator, ticket_id, Status.Todo);
 
-    const log_after_move = try git.log(allocator);
+    const log_after_move = try git.log(allocator, false, null, null);
     defer allocator.free(log_after_move);
     const commits_after_move = std.mem.count(u8, log_after_move, "commit ");
     try std.testing.expect(commits_after_move == commits_before + 1);
 
     try undo(allocator);
 
-    const log_after_undo = try git.log(allocator);
+    const log_after_undo = try git.log(allocator, false, null, null);
     defer allocator.free(log_after_undo);
     const commits_after_undo = std.mem.count(u8, log_after_undo, "commit ");
     try std.testing.expect(commits_after_undo == commits_before);

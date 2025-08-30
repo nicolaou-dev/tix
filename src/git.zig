@@ -360,14 +360,37 @@ pub fn clean(
 
 pub fn log(
     allocator: std.mem.Allocator,
+    oneline: bool,
+    limit: ?u32,
+    since: ?[]const u8,
 ) GitError![]const u8 {
     var argv = std.ArrayList([]const u8){};
     defer argv.deinit(allocator);
 
     try argv.append(allocator, "git");
+    try argv.append(allocator, "--no-pager");
     try argv.append(allocator, "-C");
     try argv.append(allocator, ".tix");
     try argv.append(allocator, "log");
+
+    if (oneline) {
+        try argv.append(allocator, "--oneline");
+    } else {
+        try argv.append(allocator, "--pretty=format:%h %ad %s");
+        try argv.append(allocator, "--date=short");
+    }
+
+    if (limit) |n| {
+        const limit_str = std.fmt.allocPrint(allocator, "-{}", .{n}) catch return GitError.OutOfMemory;
+        defer allocator.free(limit_str);
+        try argv.append(allocator, limit_str);
+    }
+
+    if (since) |s| {
+        const since_str = std.fmt.allocPrint(allocator, "--since={s}", .{s}) catch return GitError.OutOfMemory;
+        defer allocator.free(since_str);
+        try argv.append(allocator, since_str);
+    }
 
     const result = std.process.Child.run(.{
         .allocator = allocator,
