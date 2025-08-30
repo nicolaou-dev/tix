@@ -327,6 +327,20 @@ pub fn resetHardHead(
     }
 }
 
+pub fn resetHardReflog(
+    allocator: std.mem.Allocator,
+) GitError!void {
+    const result = std.process.Child.run(.{ .allocator = allocator, .argv = &[_][]const u8{ "git", "-C", ".tix", "reset", "--hard", "HEAD@{1}" } }) catch {
+        return GitError.CommandFailed;
+    };
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+
+    if (result.term.Exited != 0) {
+        return GitError.CommandFailed;
+    }
+}
+
 pub fn clean(
     allocator: std.mem.Allocator,
 ) GitError!void {
