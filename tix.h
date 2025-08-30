@@ -228,6 +228,12 @@ int tix_show_priority(const char *ticket_id);
 int tix_amend(const char *ticket_id, const char *title, const char *body, unsigned char priority);
 
 /**
+ * Undo the last commit (git reset --hard HEAD^)
+ * @return 0 = success, -2 = not a repository, -3 = command failed
+ */
+int tix_undo(void);
+
+/**
  * Free a CTicket array returned by tix_list
  * @param tickets Pointer to CTicket array to free
  * @param count Number of tickets in the array

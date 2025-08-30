@@ -10,6 +10,7 @@ const ffi_move = @import("ffi/ffi_move.zig");
 const ffi_list = @import("ffi/ffi_list.zig");
 const ffi_show = @import("ffi/ffi_show.zig");
 const ffi_amend = @import("ffi/ffi_amend.zig");
+const ffi_undo = @import("ffi/ffi_undo.zig");
 
 // Export all FFI functions for C
 pub export fn tix_init() c_int {
@@ -98,4 +99,8 @@ pub export fn tix_show_priority(id: [*:0]const u8) c_int {
 
 pub export fn tix_amend(ticket_id: [*:0]const u8, title: [*:0]const u8, body: [*:0]const u8, priority: u8) c_int {
     return ffi_amend.tix_amend(ticket_id, title, body, priority);
+}
+
+pub export fn tix_undo() c_int {
+    return ffi_undo.tix_undo();
 }
