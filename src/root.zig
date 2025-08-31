@@ -16,6 +16,7 @@ const ffi_projects = @import("ffi/ffi_projects.zig");
 const ffi_log = @import("ffi/ffi_log.zig");
 const ffi_pull = @import("ffi/ffi_pull.zig");
 const ffi_clone = @import("ffi/ffi_clone.zig");
+const ffi_push = @import("ffi/ffi_push.zig");
 
 // Export all FFI functions for C
 pub export fn tix_init() c_int {
@@ -136,4 +137,8 @@ pub export fn tix_pull() c_int {
 
 pub export fn tix_clone(repo_url: [*:0]const u8) c_int {
     return ffi_clone.tix_clone(repo_url);
+}
+
+pub export fn tix_push() c_int {
+    return ffi_push.tix_push();
 }

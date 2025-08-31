@@ -284,6 +284,12 @@ int tix_pull(void);
 int tix_clone(const char *repo_url);
 
 /**
+ * Push changes to remote repository (always uses -u with current branch)
+ * @return 0 = success, -2 = not a repository, -3 = command failed
+ */
+int tix_push(void);
+
+/**
  * Free a CTicket array returned by tix_list
  * @param tickets Pointer to CTicket array to free
  * @param count Number of tickets in the array

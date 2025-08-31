@@ -452,6 +452,7 @@ pub fn branch(
 
     return output;
 }
+
 pub fn pull(
     allocator: std.mem.Allocator,
 ) GitError!void {
@@ -478,6 +479,65 @@ pub fn pull(
 
     return;
 }
+
+pub fn getCurrentBranch(
+    allocator: std.mem.Allocator,
+) GitError![]u8 {
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "git", "-C", ".tix", "branch", "--show-current" },
+    }) catch {
+        return GitError.CommandFailed;
+    };
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+
+    const err_output = result.stderr;
+
+    const not_a_repo = "not a git repository";
+
+    if (indexOf(u8, err_output, not_a_repo) != null) {
+        return GitError.NotARepository;
+    }
+
+    if (result.term.Exited != 0) {
+        return GitError.CommandFailed;
+    }
+
+    const branch_name = std.mem.trim(u8, result.stdout, " \n\r\t");
+    return allocator.dupe(u8, branch_name);
+}
+
+pub fn push(
+    allocator: std.mem.Allocator,
+) GitError!void {
+    const current_branch = try getCurrentBranch(allocator);
+    defer allocator.free(current_branch);
+
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "git", "-C", ".tix", "push", "-u", "origin", current_branch },
+    }) catch {
+        return GitError.CommandFailed;
+    };
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+
+    const err_output = result.stderr;
+
+    const not_a_repo = "not a git repository";
+
+    if (indexOf(u8, err_output, not_a_repo) != null) {
+        return GitError.NotARepository;
+    }
+
+    if (result.term.Exited != 0) {
+        return GitError.CommandFailed;
+    }
+
+    return;
+}
+
 pub fn clone(
     allocator: std.mem.Allocator,
     repo_url: []const u8,
