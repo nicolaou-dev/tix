@@ -207,12 +207,11 @@ pub fn remote(
 
 pub fn remoteAdd(
     allocator: std.mem.Allocator,
-    name: []const u8,
     url: []const u8,
 ) GitError!void {
     const result = std.process.Child.run(.{
         .allocator = allocator,
-        .argv = &[_][]const u8{ "git", "-C", ".tix", "remote", "add", name, url },
+        .argv = &[_][]const u8{ "git", "-C", ".tix", "remote", "add", "origin", url },
     }) catch {
         return GitError.CommandFailed;
     };

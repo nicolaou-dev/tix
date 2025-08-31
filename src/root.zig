@@ -43,8 +43,8 @@ pub export fn tix_remote_free(str: [*c]u8) void {
     ffi_remote.tix_remote_free(str);
 }
 
-pub export fn tix_remote_add(name: [*:0]const u8, url: [*:0]const u8) c_int {
-    return ffi_remote.tix_remote_add(name, url);
+pub export fn tix_remote_add(url: [*:0]const u8) c_int {
+    return ffi_remote.tix_remote_add(url);
 }
 
 pub export fn tix_switch_project(project: [*:0]const u8, create: c_int) c_int {

@@ -115,12 +115,11 @@ int tix_remote(int verbose, char **output);
 void tix_remote_free(char *str);
 
 /**
- * Add a remote repository
- * @param name Remote name
+ * Add a remote repository (always named "origin")
  * @param url Remote URL
  * @return 0 = success, -30 = remote already exists, -31 = invalid name
  */
-int tix_remote_add(const char *name, const char *url);
+int tix_remote_add(const char *url);
 
 /* Project management */
 

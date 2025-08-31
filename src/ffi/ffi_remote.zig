@@ -25,15 +25,14 @@ pub fn tix_remote_free(str: [*c]u8) void {
     helper.free_string(str);
 }
 
-/// Adds a new remote with the specified name and URL.
-pub fn tix_remote_add(name: [*:0]const u8, url: [*:0]const u8) c_int {
+/// Adds a new remote with hardcoded name "origin" and the specified URL.
+pub fn tix_remote_add(url: [*:0]const u8) c_int {
     const allocator = std.heap.c_allocator;
 
-    // Convert C strings to Zig slices
-    const name_slice = std.mem.span(name);
+    // Convert C string to Zig slice
     const url_slice = std.mem.span(url);
 
-    remote.remoteAdd(allocator, name_slice, url_slice) catch |err| {
+    remote.remoteAdd(allocator, url_slice) catch |err| {
         return @intFromEnum(ErrorCode.fromError(err));
     };
 

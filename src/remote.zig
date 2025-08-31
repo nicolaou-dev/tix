@@ -17,8 +17,8 @@ pub fn remote(allocator: std.mem.Allocator, verbose: bool) RemoteError![]const u
     return result;
 }
 
-pub fn remoteAdd(allocator: std.mem.Allocator, name: []const u8, url: []const u8) RemoteError!void {
-    git.remoteAdd(allocator, name, url) catch |err| switch (err) {
+pub fn remoteAdd(allocator: std.mem.Allocator, url: []const u8) RemoteError!void {
+    git.remoteAdd(allocator, url) catch |err| switch (err) {
         error.RemoteAlreadyExists => return RemoteError.RemoteAlreadyExists,
         error.InvalidRemoteName => return RemoteError.InvalidRemoteName,
         error.NotARepository => return RemoteError.NotARepository,
@@ -43,15 +43,12 @@ test "test remote and remoteAdd functions" {
     try std.testing.expectError(RemoteError.NotARepository, remote_err);
 
     // Test remoteAdd() when .tix is not a git repo
-    const err = remoteAdd(allocator, "origin", "https://example.com/repo.git");
+    const err = remoteAdd(allocator, "https://example.com/repo.git");
     try std.testing.expectError(RemoteError.NotARepository, err);
 
     _ = try init(allocator);
 
-    const err2 = remoteAdd(allocator, "", "https://example.com/repo.git");
-    try std.testing.expectError(RemoteError.InvalidRemoteName, err2);
-
-    try remoteAdd(allocator, "origin", "https://example.com/repo.git");
+    try remoteAdd(allocator, "https://example.com/repo.git");
 
     // Test without verbose
     const remotes = try remote(allocator, false);
@@ -68,6 +65,6 @@ test "test remote and remoteAdd functions" {
     try std.testing.expect(std.mem.indexOf(u8, remotes_verbose, "origin") != null);
     try std.testing.expect(std.mem.indexOf(u8, remotes_verbose, "https://example.com/repo.git") != null);
 
-    const err3 = remoteAdd(allocator, "origin", "https://example.com/repo.git");
+    const err3 = remoteAdd(allocator, "https://example.com/repo.git");
     try std.testing.expectError(RemoteError.RemoteAlreadyExists, err3);
 }

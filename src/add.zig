@@ -153,9 +153,6 @@ test "add task with empty title fails" {
     const original = try test_helper.setupTestDir(allocator, "add_empty_title_test");
     defer test_helper.cleanupTestDir("add_empty_title_test", original);
 
-    // Create .tix directory
-    try std.fs.cwd().makeDir(".tix");
-
     _ = try init(allocator);
 
     const result = add(allocator, "", "This is a test task with empty title.", Priority.B);
@@ -170,9 +167,6 @@ test "set priority to z (default)" {
 
     const original = try test_helper.setupTestDir(allocator, "add_default_priority_test");
     defer test_helper.cleanupTestDir("add_default_priority_test", original);
-
-    // Create .tix directory
-    try std.fs.cwd().makeDir(".tix");
 
     _ = try init(allocator);
 
