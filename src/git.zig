@@ -452,3 +452,20 @@ pub fn branch(
 
     return output;
 }
+pub fn clone(
+    allocator: std.mem.Allocator,
+    repo_url: []const u8,
+) GitError!void {
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "git", "clone", repo_url, ".tix" },
+    }) catch {
+        return GitError.CommandFailed;
+    };
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+
+    if (result.term.Exited != 0) {
+        return GitError.CommandFailed;
+    }
+}

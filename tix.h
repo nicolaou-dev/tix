@@ -271,6 +271,13 @@ int tix_log(char **output, int oneline, int limit, const char *since);
 void tix_log_free(char *str);
 
 /**
+ * Clone a remote repository
+ * @param repo_url URL of the remote repository to clone
+ * @return 0 = success, -3 = command failed, -1 = out of memory, workspace already exists
+ */
+int tix_clone(const char *repo_url);
+
+/**
  * Free a CTicket array returned by tix_list
  * @param tickets Pointer to CTicket array to free
  * @param count Number of tickets in the array
