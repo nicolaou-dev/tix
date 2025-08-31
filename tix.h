@@ -271,6 +271,12 @@ int tix_log(char **output, int oneline, int limit, const char *since);
 void tix_log_free(char *str);
 
 /**
+ * Pull changes from remote repository
+ * @return 0 = success, -2 = not a repository, -3 = command failed
+ */
+int tix_pull(void);
+
+/**
  * Clone a remote repository
  * @param repo_url URL of the remote repository to clone
  * @return 0 = success, -3 = command failed, -1 = out of memory, workspace already exists

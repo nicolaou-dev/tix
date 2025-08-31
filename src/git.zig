@@ -452,6 +452,32 @@ pub fn branch(
 
     return output;
 }
+pub fn pull(
+    allocator: std.mem.Allocator,
+) GitError!void {
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "git", "-C", ".tix", "pull" },
+    }) catch {
+        return GitError.CommandFailed;
+    };
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+
+    const err_output = result.stderr;
+
+    const not_a_repo = "not a git repository";
+
+    if (indexOf(u8, err_output, not_a_repo) != null) {
+        return GitError.NotARepository;
+    }
+
+    if (result.term.Exited != 0) {
+        return GitError.CommandFailed;
+    }
+
+    return;
+}
 pub fn clone(
     allocator: std.mem.Allocator,
     repo_url: []const u8,

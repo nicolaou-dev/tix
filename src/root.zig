@@ -14,6 +14,7 @@ const ffi_undo = @import("ffi/ffi_undo.zig");
 const ffi_redo = @import("ffi/ffi_redo.zig");
 const ffi_projects = @import("ffi/ffi_projects.zig");
 const ffi_log = @import("ffi/ffi_log.zig");
+const ffi_pull = @import("ffi/ffi_pull.zig");
 const ffi_clone = @import("ffi/ffi_clone.zig");
 
 // Export all FFI functions for C
@@ -128,6 +129,11 @@ pub export fn tix_log(output: *[*c]u8, oneline: c_int, limit: c_int, since: [*c]
 pub export fn tix_log_free(str: [*c]u8) void {
     ffi_log.tix_log_free(str);
 }
+
+pub export fn tix_pull() c_int {
+    return ffi_pull.tix_pull();
+}
+
 pub export fn tix_clone(repo_url: [*:0]const u8) c_int {
     return ffi_clone.tix_clone(repo_url);
 }
