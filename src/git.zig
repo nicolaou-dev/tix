@@ -380,16 +380,18 @@ pub fn log(
         try argv.append(allocator, "--date=short");
     }
 
+    var limit_str: ?[]u8 = null;
+    defer if (limit_str) |s| allocator.free(s);
     if (limit) |n| {
-        const limit_str = std.fmt.allocPrint(allocator, "-{}", .{n}) catch return GitError.OutOfMemory;
-        defer allocator.free(limit_str);
-        try argv.append(allocator, limit_str);
+        limit_str = std.fmt.allocPrint(allocator, "-{}", .{n}) catch return GitError.OutOfMemory;
+        argv.append(allocator, limit_str.?) catch return GitError.OutOfMemory;
     }
 
+    var since_str: ?[]u8 = null;
+    defer if (since_str) |s| allocator.free(s);
     if (since) |s| {
-        const since_str = std.fmt.allocPrint(allocator, "--since={s}", .{s}) catch return GitError.OutOfMemory;
-        defer allocator.free(since_str);
-        try argv.append(allocator, since_str);
+        since_str = std.fmt.allocPrint(allocator, "--since={s}", .{s}) catch return GitError.OutOfMemory;
+        argv.append(allocator, since_str.?) catch return GitError.OutOfMemory;
     }
 
     const result = std.process.Child.run(.{
