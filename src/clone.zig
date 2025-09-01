@@ -1,5 +1,6 @@
 const std = @import("std");
 const git = @import("git.zig");
+const helper = @import("helper.zig");
 
 pub const CloneError = error{
     CommandFailed,
@@ -20,6 +21,9 @@ pub fn clone(
         git.GitError.OutOfMemory => return CloneError.OutOfMemory,
         else => return CloneError.CommandFailed,
     };
+
+    // Add .tix to .gitignore like init does
+    helper.addTixToGitIgnore(allocator) catch {};
 }
 
 test "clone fetches workspace from remote" {
