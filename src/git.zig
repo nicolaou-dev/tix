@@ -375,7 +375,7 @@ pub fn log(
     if (oneline) {
         try argv.append(allocator, "--oneline");
     } else {
-        try argv.append(allocator, "--pretty=format:%h %ad %s");
+        try argv.append(allocator, "--pretty=format:%ad %an %s");
         try argv.append(allocator, "--date=short");
     }
 
