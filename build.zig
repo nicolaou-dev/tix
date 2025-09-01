@@ -28,11 +28,11 @@ pub fn build(b: *std.Build) void {
         static_lib.pie = true;
     }
     
-    // Disable stack protections for all targets to avoid linking issues with runtime symbols
-    // This is acceptable for tix since it performs simple file I/O operations without deep
-    // recursion or unbounded stack usage
-    static_lib.root_module.stack_check = false;
-    static_lib.root_module.stack_protector = false;
+    // Use ReleaseSmall optimization for all platforms to avoid stack protection issues
+    // This eliminates linking problems with __zig_probe_stack, __stack_chk_fail, ___chkstk_ms
+    // while maintaining good performance for the tix library's simple file I/O operations
+    static_lib.root_module.optimize = .ReleaseSmall;
+    
 
     b.installArtifact(static_lib);
 
@@ -92,11 +92,11 @@ pub fn build(b: *std.Build) void {
             lib.pie = true;
         }
         
-        // Disable stack protections for all targets to avoid linking issues with runtime symbols
-        // This is acceptable for tix since it performs simple file I/O operations without deep
-        // recursion or unbounded stack usage  
-        lib.root_module.stack_check = false;
-        lib.root_module.stack_protector = false;
+        // Use ReleaseSmall optimization for all platforms to avoid stack protection issues
+        // This eliminates linking problems with __zig_probe_stack, __stack_chk_fail, ___chkstk_ms
+        // while maintaining good performance for the tix library's simple file I/O operations
+        lib.root_module.optimize = .ReleaseSmall;
+        
 
         const install = b.addInstallArtifact(lib, .{
             .dest_dir = .{ .override = .{ .custom = platform } },
