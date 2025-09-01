@@ -21,6 +21,11 @@ pub fn build(b: *std.Build) void {
         }),
     });
     static_lib.linkLibC();
+    
+    // Enable PIE for Linux targets to fix linking issues with modern systems
+    if (target.result.os.tag == .linux) {
+        static_lib.pie = true;
+    }
 
     b.installArtifact(static_lib);
 
@@ -72,6 +77,11 @@ pub fn build(b: *std.Build) void {
             }),
         });
         lib.linkLibC();
+        
+        // Enable PIE for Linux targets to fix linking issues with modern systems
+        if (std.mem.indexOf(u8, platform, "linux") != null) {
+            lib.pie = true;
+        }
 
         const install = b.addInstallArtifact(lib, .{
             .dest_dir = .{ .override = .{ .custom = platform } },
