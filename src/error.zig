@@ -35,6 +35,9 @@ pub const ErrorCode = enum(c_int) {
     // Move-specific errors
     INVALID_STATUS = -60,
 
+    // Push-specific errors
+    PUSH_REJECTED_NEEDS_FORCE = -70,
+
     pub fn fromError(err: anyerror) ErrorCode {
         return switch (err) {
             // General errors (used across modules)
@@ -67,6 +70,9 @@ pub const ErrorCode = enum(c_int) {
 
             // Move-specific
             error.InvalidStatus => .INVALID_STATUS,
+
+            // Push-specific
+            error.RejectedNeedsForce => .PUSH_REJECTED_NEEDS_FORCE,
 
             // Show-specific
             error.TicketNotFound => .TICKET_NOT_FOUND,

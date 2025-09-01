@@ -139,6 +139,6 @@ pub export fn tix_clone(repo_url: [*:0]const u8) c_int {
     return ffi_clone.tix_clone(repo_url);
 }
 
-pub export fn tix_push() c_int {
-    return ffi_push.tix_push();
+pub export fn tix_push(force: c_int, force_with_lease: c_int) c_int {
+    return ffi_push.tix_push(force, force_with_lease);
 }

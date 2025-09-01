@@ -49,6 +49,9 @@ extern "C" {
 /* Move-specific errors */
 #define TIX_INVALID_STATUS                   -60
 
+/* Push-specific errors */
+#define TIX_PUSH_REJECTED_NEEDS_FORCE        -70
+
 /* Function declarations matching root.zig exports */
 
 /* Workspace management */
@@ -286,9 +289,11 @@ int tix_clone(const char *repo_url);
 
 /**
  * Push changes to remote repository (always uses -u with current branch)
+ * @param force Non-zero to force push (--force)
+ * @param force_with_lease Non-zero to force with lease (--force-with-lease)
  * @return 0 = success, -2 = not a repository, -3 = command failed
  */
-int tix_push(void);
+int tix_push(int force, int force_with_lease);
 
 /**
  * Free a CTicket array returned by tix_list

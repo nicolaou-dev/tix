@@ -18,6 +18,8 @@ pub const GitError = error{
     RemoteAlreadyExists,
     InvalidRemoteName,
     NotARepository,
+    
+    PushRejectedNeedsForce,
 };
 
 /// Initialize a new git repository
@@ -509,6 +511,8 @@ pub fn getCurrentBranch(
 
 pub fn push(
     allocator: std.mem.Allocator,
+    force: bool,
+    force_with_lease: bool,
 ) GitError!void {
     const current_branch = getCurrentBranch(allocator) catch |err| switch (err) {
         GitError.NotARepository => return GitError.NotARepository,
@@ -516,9 +520,27 @@ pub fn push(
     };
     defer allocator.free(current_branch);
 
+    var argv = std.ArrayList([]const u8){};
+    defer argv.deinit(allocator);
+
+    try argv.append(allocator, "git");
+    try argv.append(allocator, "-C");
+    try argv.append(allocator, ".tix");
+    try argv.append(allocator, "push");
+    try argv.append(allocator, "-u");
+    
+    if (force_with_lease) {
+        try argv.append(allocator, "--force-with-lease");
+    } else if (force) {
+        try argv.append(allocator, "--force");
+    }
+    
+    try argv.append(allocator, "origin");
+    try argv.append(allocator, current_branch);
+
     const result = std.process.Child.run(.{
         .allocator = allocator,
-        .argv = &[_][]const u8{ "git", "-C", ".tix", "push", "-u", "origin", current_branch },
+        .argv = argv.items,
     }) catch {
         return GitError.CommandFailed;
     };
@@ -528,9 +550,14 @@ pub fn push(
     const err_output = result.stderr;
 
     const not_a_repo = "not a git repository";
+    const rejected = "Updates were rejected";
 
     if (indexOf(u8, err_output, not_a_repo) != null) {
         return GitError.NotARepository;
+    }
+
+    if (indexOf(u8, err_output, rejected) != null) {
+        return GitError.PushRejectedNeedsForce;
     }
 
     if (result.term.Exited != 0) {
