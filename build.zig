@@ -22,10 +22,16 @@ pub fn build(b: *std.Build) void {
     });
     static_lib.linkLibC();
     
-    // Enable PIE for Linux targets to fix linking issues with modern systems
+    // Platform-specific configurations
     if (target.result.os.tag == .linux) {
+        // Enable PIE for Linux targets to fix linking issues with modern systems
         static_lib.pie = true;
     }
+    
+    // Disable stack probing for all targets to avoid linking issues with runtime symbols
+    // This is acceptable for tix since it performs simple file I/O operations without deep
+    // recursion or unbounded stack usage
+    static_lib.root_module.stack_check = false;
 
     b.installArtifact(static_lib);
 
@@ -55,6 +61,7 @@ pub fn build(b: *std.Build) void {
         "aarch64-macos",
         "x86_64-macos",
         "x86_64-linux",
+        "aarch64-linux",
         "x86_64-windows",
     };
 
@@ -78,10 +85,16 @@ pub fn build(b: *std.Build) void {
         });
         lib.linkLibC();
         
-        // Enable PIE for Linux targets to fix linking issues with modern systems
+        // Platform-specific configurations  
         if (std.mem.indexOf(u8, platform, "linux") != null) {
+            // Enable PIE for Linux targets to fix linking issues with modern systems
             lib.pie = true;
         }
+        
+        // Disable stack probing for all targets to avoid linking issues with runtime symbols
+        // This is acceptable for tix since it performs simple file I/O operations without deep
+        // recursion or unbounded stack usage  
+        lib.root_module.stack_check = false;
 
         const install = b.addInstallArtifact(lib, .{
             .dest_dir = .{ .override = .{ .custom = platform } },
