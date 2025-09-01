@@ -33,7 +33,7 @@ test "log returns commit history" {
     _ = try init(allocator);
 
     // Create a ticket to generate some history
-    const id = try add(allocator, "Test ticket", "Test body", Priority.B);
+    const id = try add(allocator, "Test ticket", "Test body", Priority.B, null);
     defer allocator.free(id);
 
     // Test basic log

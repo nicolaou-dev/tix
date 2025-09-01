@@ -103,19 +103,19 @@ test "list active tickets by default" {
     _ = try init(allocator);
 
     // Create tickets with different statuses
-    const todo_id = try add(allocator, "Todo Task", "This is todo", .A);
+    const todo_id = try add(allocator, "Todo Task", "This is todo", .A, null);
     defer allocator.free(todo_id);
     _ = try move(allocator, todo_id, .Todo);
 
-    const doing_id = try add(allocator, "Doing Task", "This is doing", .B);
+    const doing_id = try add(allocator, "Doing Task", "This is doing", .B, null);
     defer allocator.free(doing_id);
     _ = try move(allocator, doing_id, .Doing);
 
-    const done_id = try add(allocator, "Done Task", "This is done", .C);
+    const done_id = try add(allocator, "Done Task", "This is done", .C, null);
     defer allocator.free(done_id);
     _ = try move(allocator, done_id, .Done);
 
-    const backlog_id = try add(allocator, "Backlog Task", "This is backlog", .Z);
+    const backlog_id = try add(allocator, "Backlog Task", "This is backlog", .Z, null);
     defer allocator.free(backlog_id);
 
     // List with no filters (should get all tickets now)
@@ -160,19 +160,19 @@ test "list filter by status" {
     _ = try init(allocator);
 
     // Create multiple todo tickets
-    const todo1_id = try add(allocator, "Todo 1", "First todo", .A);
+    const todo1_id = try add(allocator, "Todo 1", "First todo", .A, null);
     defer allocator.free(todo1_id);
     _ = try move(allocator, todo1_id, .Todo);
 
-    const todo2_id = try add(allocator, "Todo 2", "Second todo", .B);
+    const todo2_id = try add(allocator, "Todo 2", "Second todo", .B, null);
     defer allocator.free(todo2_id);
     _ = try move(allocator, todo2_id, .Todo);
 
-    const doing_id = try add(allocator, "Doing Task", "This is doing", .C);
+    const doing_id = try add(allocator, "Doing Task", "This is doing", .C, null);
     defer allocator.free(doing_id);
     _ = try move(allocator, doing_id, .Doing);
 
-    const done_id = try add(allocator, "Done Task", "This is done", .Z);
+    const done_id = try add(allocator, "Done Task", "This is done", .Z, null);
     defer allocator.free(done_id);
     _ = try move(allocator, done_id, .Done);
 
@@ -234,19 +234,19 @@ test "list filter by priority" {
     _ = try init(allocator);
 
     // Create tickets with different priorities
-    const high1_id = try add(allocator, "High Priority 1", "Important", .A);
+    const high1_id = try add(allocator, "High Priority 1", "Important", .A, null);
     defer allocator.free(high1_id);
     _ = try move(allocator, high1_id, .Todo);
 
-    const high2_id = try add(allocator, "High Priority 2", "Also important", .A);
+    const high2_id = try add(allocator, "High Priority 2", "Also important", .A, null);
     defer allocator.free(high2_id);
     _ = try move(allocator, high2_id, .Doing);
 
-    const medium_id = try add(allocator, "Medium Priority", "Medium urgent", .B);
+    const medium_id = try add(allocator, "Medium Priority", "Medium urgent", .B, null);
     defer allocator.free(medium_id);
     _ = try move(allocator, medium_id, .Todo);
 
-    const low_id = try add(allocator, "Low Priority", "Not urgent", .Z);
+    const low_id = try add(allocator, "Low Priority", "Not urgent", .Z, null);
     defer allocator.free(low_id);
     _ = try move(allocator, low_id, .Todo);
 
@@ -308,15 +308,15 @@ test "list combined filters" {
     _ = try init(allocator);
 
     // Create tickets with various combinations
-    const todo_a_id = try add(allocator, "Todo A", "High priority todo", .A);
+    const todo_a_id = try add(allocator, "Todo A", "High priority todo", .A, null);
     defer allocator.free(todo_a_id);
     _ = try move(allocator, todo_a_id, .Todo);
 
-    const todo_b_id = try add(allocator, "Todo B", "Medium priority todo", .B);
+    const todo_b_id = try add(allocator, "Todo B", "Medium priority todo", .B, null);
     defer allocator.free(todo_b_id);
     _ = try move(allocator, todo_b_id, .Todo);
 
-    const doing_a_id = try add(allocator, "Doing A", "High priority doing", .A);
+    const doing_a_id = try add(allocator, "Doing A", "High priority doing", .A, null);
     defer allocator.free(doing_a_id);
     _ = try move(allocator, doing_a_id, .Doing);
 

@@ -85,7 +85,7 @@ test "move update ticket status" {
 
     _ = try init(allocator);
 
-    const id = add(allocator, "Test Task", "This is a test task.", .Z) catch |err| {
+    const id = add(allocator, "Test Task", "This is a test task.", .Z, null) catch |err| {
         std.debug.print("Error moo: {any}\n", .{err});
         return err;
     };

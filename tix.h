@@ -87,10 +87,11 @@ void tix_config_get_free(char *str);
  * @param title Ticket title (required, non-empty)
  * @param body Ticket description  
  * @param priority Priority: 'a', 'b', 'c', 'z', or 0 for default (z)
+ * @param status Status: 'b', 't', 'w', 'd', or 0 for default (backlog)
  * @param id_out Output string containing ticket ID (must be freed by caller using tix_add_free)
- * @return 0 = success, -50 = invalid priority, -51 = invalid title
+ * @return 0 = success, -50 = invalid priority, -51 = invalid title, -60 = invalid status
  */
-int tix_add(const char *title, const char *body, unsigned char priority, char **id_out);
+int tix_add(const char *title, const char *body, unsigned char priority, unsigned char status, char **id_out);
 
 /**
  * Free a string returned by tix_add

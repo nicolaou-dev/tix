@@ -51,8 +51,8 @@ pub export fn tix_switch_project(project: [*:0]const u8, create: c_int) c_int {
     return ffi_switch.tix_switch_project(project, create);
 }
 
-pub export fn tix_add(title: [*:0]const u8, body: [*:0]const u8, priority: u8, output: *[*c]u8) c_int {
-    return ffi_add.tix_add(title, body, priority, output);
+pub export fn tix_add(title: [*:0]const u8, body: [*:0]const u8, priority: u8, status: u8, output: *[*c]u8) c_int {
+    return ffi_add.tix_add(title, body, priority, status, output);
 }
 
 pub export fn tix_add_free(str: [*c]u8) void {

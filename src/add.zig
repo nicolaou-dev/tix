@@ -17,6 +17,7 @@ pub fn add(
     title: []const u8,
     body: []const u8,
     priority: Priority,
+    status: ?Status,
 ) AddError![]const u8 {
     errdefer {
         git.resetHard(allocator) catch {};
@@ -58,7 +59,8 @@ pub fn add(
         return AddError.FileSystemError;
     };
 
-    const status_file = dir.createFile(Status.Backlog.toString(), .{}) catch {
+    const ticket_status = status orelse Status.Backlog;
+    const status_file = dir.createFile(ticket_status.toString(), .{}) catch {
         return AddError.FileSystemError;
     };
     status_file.close();
@@ -105,13 +107,13 @@ test "add task" {
     // Create .tix directory
     try std.fs.cwd().makeDir(".tix");
 
-    const not_a_repo = add(allocator, "Test Task", "This is a test task.", Priority.A);
+    const not_a_repo = add(allocator, "Test Task", "This is a test task.", Priority.A, null);
 
     try std.testing.expectError(AddError.NotARepository, not_a_repo);
 
     _ = try init(allocator);
 
-    const id = add(allocator, "Test Task", "This is a test task.", Priority.A) catch |err| {
+    const id = add(allocator, "Test Task", "This is a test task.", Priority.A, null) catch |err| {
         std.debug.print("Error moo: {any}\n", .{err});
         return err;
     };
@@ -155,7 +157,7 @@ test "add task with empty title fails" {
 
     _ = try init(allocator);
 
-    const result = add(allocator, "", "This is a test task with empty title.", Priority.B);
+    const result = add(allocator, "", "This is a test task with empty title.", Priority.B, null);
     try std.testing.expectError(AddError.InvalidTitle, result);
 }
 
@@ -170,7 +172,7 @@ test "set priority to z (default)" {
 
     _ = try init(allocator);
 
-    const id = add(allocator, "Task with Default Priority", "This task should have priority Z.", Priority.Z) catch {
+    const id = add(allocator, "Task with Default Priority", "This task should have priority Z.", Priority.Z, null) catch {
         return;
     };
     defer allocator.free(id);

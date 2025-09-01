@@ -90,7 +90,7 @@ test "show full ticket details" {
     _ = try init(allocator);
 
     // Create a test ticket
-    const ticket_id = try add(allocator, "Test Title", "Test body content\nWith multiple lines", .A);
+    const ticket_id = try add(allocator, "Test Title", "Test body content\nWith multiple lines", .A, null);
     defer allocator.free(ticket_id);
 
     // Move it to Todo status
@@ -120,7 +120,7 @@ test "show individual fields" {
 
     _ = try init(allocator);
 
-    const ticket_id = try add(allocator, "Field Test Title", "Field test body", .B);
+    const ticket_id = try add(allocator, "Field Test Title", "Field test body", .B, null);
     defer allocator.free(ticket_id);
 
     _ = try move(allocator, ticket_id, .Doing);
@@ -189,7 +189,7 @@ test "show ticket with empty body" {
     _ = try init(allocator);
 
     // Create ticket with empty body
-    const ticket_id = try add(allocator, "No Body Title", "", .Z);
+    const ticket_id = try add(allocator, "No Body Title", "", .Z, null);
     defer allocator.free(ticket_id);
 
     var t = try show(allocator, ticket_id);

@@ -122,7 +122,7 @@ test "amend updates ticket title" {
 
     _ = try init(allocator);
 
-    const id = try add(allocator, "Original Title", "Original body", .Z);
+    const id = try add(allocator, "Original Title", "Original body", .Z, null);
     defer allocator.free(id);
 
     // Amend only the title
@@ -156,7 +156,7 @@ test "amend updates ticket priority" {
 
     _ = try init(allocator);
 
-    const id = try add(allocator, "Test Title", "Test body", .Z);
+    const id = try add(allocator, "Test Title", "Test body", .Z, null);
     defer allocator.free(id);
 
     // Amend priority only
@@ -186,7 +186,7 @@ test "amend with no changes does not commit" {
 
     _ = try init(allocator);
 
-    const id = try add(allocator, "Test Title", "Test body", .Z);
+    const id = try add(allocator, "Test Title", "Test body", .Z, null);
     defer allocator.free(id);
 
     // Get initial commit count
@@ -231,7 +231,7 @@ test "amend commit message format is clean" {
 
     _ = try init(allocator);
 
-    const id = try add(allocator, "Original Title", "Original body", .Z);
+    const id = try add(allocator, "Original Title", "Original body", .Z, null);
     defer allocator.free(id);
 
     // Amend multiple fields to test commit message formatting

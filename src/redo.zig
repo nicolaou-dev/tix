@@ -32,7 +32,7 @@ test "redo restores undone change" {
     _ = try init(allocator);
 
     const title = "Test ticket";
-    const ticket_id = try add(allocator, title, "Test body", Priority.B);
+    const ticket_id = try add(allocator, title, "Test body", Priority.B, null);
     defer allocator.free(ticket_id);
 
     var dir = try std.fs.cwd().openDir(".tix", .{});

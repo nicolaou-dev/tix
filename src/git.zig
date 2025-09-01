@@ -510,7 +510,10 @@ pub fn getCurrentBranch(
 pub fn push(
     allocator: std.mem.Allocator,
 ) GitError!void {
-    const current_branch = try getCurrentBranch(allocator);
+    const current_branch = getCurrentBranch(allocator) catch |err| switch (err) {
+        GitError.NotARepository => return GitError.NotARepository,
+        else => return GitError.CommandFailed,
+    };
     defer allocator.free(current_branch);
 
     const result = std.process.Child.run(.{

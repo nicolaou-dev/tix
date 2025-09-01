@@ -44,7 +44,7 @@ test "clone fetches workspace from remote" {
         _ = try init(allocator);
 
         const title = "Test ticket";
-        const id = try add.add(allocator, title, "Test body", .Z);
+        const id = try add.add(allocator, title, "Test body", .Z, null);
         defer allocator.free(id);
         
         // Save ticket ID for later use
