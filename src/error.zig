@@ -14,6 +14,7 @@ pub const ErrorCode = enum(c_int) {
     // Init-specific errors
     INIT_WORKSPACE_CREATION_FAILED = -10,
     INIT_ACCESS_DENIED = -11,
+    INIT_NOT_ON_MAIN_BRANCH = -12,
 
     // Config-specific errors
     CONFIG_INVALID_KEY = -20,
@@ -46,6 +47,7 @@ pub const ErrorCode = enum(c_int) {
             // Init-specific
             error.InitWorkspaceCreationFailed => .INIT_WORKSPACE_CREATION_FAILED,
             error.InitAccessDenied => .INIT_ACCESS_DENIED,
+            error.InitNotOnMainBranch => .INIT_NOT_ON_MAIN_BRANCH,
 
             // Config-specific
             error.ConfigKeyNotFound, error.KeyNotFound => .CONFIG_INVALID_KEY,

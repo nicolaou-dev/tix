@@ -5,6 +5,7 @@ const helper = @import("helper.zig");
 pub const WorkspaceError = error{
     InitWorkspaceCreationFailed,
     InitAccessDenied,
+    InitNotOnMainBranch,
 };
 
 const InitResult = enum {
@@ -29,7 +30,17 @@ pub fn init(allocator: std.mem.Allocator) WorkspaceError!InitResult {
         return WorkspaceError.InitWorkspaceCreationFailed;
     };
 
-    // Check if README already exists before creating
+    if (git_exists) {
+        const current_branch = git.getCurrentBranch(allocator) catch {
+            return WorkspaceError.InitWorkspaceCreationFailed;
+        };
+        defer allocator.free(current_branch);
+        
+        if (!std.mem.eql(u8, current_branch, "main")) {
+            return WorkspaceError.InitNotOnMainBranch;
+        }
+    }
+
     const readme_exists = if (std.fs.cwd().access(".tix/README.md", .{})) |_| true else |_| false;
     
     createReadme(allocator) catch {};

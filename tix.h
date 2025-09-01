@@ -28,6 +28,7 @@ extern "C" {
 /* Init-specific errors */
 #define TIX_INIT_WORKSPACE_CREATION_FAILED   -10
 #define TIX_INIT_ACCESS_DENIED               -11
+#define TIX_INIT_NOT_ON_MAIN_BRANCH          -12
 
 /* Config-specific errors */
 #define TIX_CONFIG_INVALID_KEY               -20
