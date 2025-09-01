@@ -21,6 +21,14 @@ pub fn build(b: *std.Build) void {
         }),
     });
     static_lib.linkLibC();
+    
+    if (target.result.os.tag == .linux) {
+        static_lib.pie = true;
+    }
+    
+    
+    static_lib.root_module.optimize = .ReleaseSmall;
+    
 
     b.installArtifact(static_lib);
 
@@ -50,7 +58,8 @@ pub fn build(b: *std.Build) void {
         "aarch64-macos",
         "x86_64-macos",
         "x86_64-linux",
-        "x86_64-windows",
+        "aarch64-linux",
+        "x86_64-windows-msvc",
     };
 
     for (platforms) |platform| {
@@ -72,6 +81,14 @@ pub fn build(b: *std.Build) void {
             }),
         });
         lib.linkLibC();
+        
+        if (std.mem.indexOf(u8, platform, "linux") != null) {
+            lib.pie = true;
+        }
+        
+        
+        lib.root_module.optimize = .ReleaseSmall;
+        
 
         const install = b.addInstallArtifact(lib, .{
             .dest_dir = .{ .override = .{ .custom = platform } },

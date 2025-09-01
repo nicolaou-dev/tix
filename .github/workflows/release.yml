@@ -37,9 +37,13 @@ jobs:
           # Package Linux x86_64
           tar -czf release/libtix-linux-x86_64.tar.gz \
             -C zig-out/x86_64-linux libtix.a tix.h
+          
+          # Package Linux ARM64
+          tar -czf release/libtix-linux-aarch64.tar.gz \
+            -C zig-out/aarch64-linux libtix.a tix.h
 
           # Package Windows x86_64
-          cd zig-out/x86_64-windows
+          cd zig-out/x86_64-windows-msvc
           zip ../../release/libtix-windows-x86_64.zip tix.dll tix.lib tix.h
           cd ../..
 
