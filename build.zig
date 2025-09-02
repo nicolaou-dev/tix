@@ -22,15 +22,14 @@ pub fn build(b: *std.Build) void {
     });
     static_lib.linkLibC();
     
-    // Platform-specific configurations
     if (target.result.os.tag == .linux) {
-        // Enable PIE for Linux targets to fix linking issues with modern systems
         static_lib.pie = true;
     }
     
-    // Use ReleaseSmall optimization for all platforms to avoid stack protection issues
-    // This eliminates linking problems with __zig_probe_stack, __stack_chk_fail, ___chkstk_ms
-    // while maintaining good performance for the tix library's simple file I/O operations
+    if (target.result.os.tag == .windows) {
+        static_lib.bundle_compiler_rt = true;
+    }
+    
     static_lib.root_module.optimize = .ReleaseSmall;
     
 
@@ -86,15 +85,14 @@ pub fn build(b: *std.Build) void {
         });
         lib.linkLibC();
         
-        // Platform-specific configurations  
         if (std.mem.indexOf(u8, platform, "linux") != null) {
-            // Enable PIE for Linux targets to fix linking issues with modern systems
             lib.pie = true;
         }
         
-        // Use ReleaseSmall optimization for all platforms to avoid stack protection issues
-        // This eliminates linking problems with __zig_probe_stack, __stack_chk_fail, ___chkstk_ms
-        // while maintaining good performance for the tix library's simple file I/O operations
+        if (std.mem.indexOf(u8, platform, "windows") != null) {
+            lib.bundle_compiler_rt = true;
+        }
+        
         lib.root_module.optimize = .ReleaseSmall;
         
 
