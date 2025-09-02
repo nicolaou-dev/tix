@@ -33,27 +33,28 @@ Within each project branch:
 
 ```
 backend branch/
-├── 01HQXW5P7R8ZYFG9K3NMVBCXSD/    # Ticket directory
-├── 01HQXW6QA2TMDFE4H8RNJYWKPB/    # Another ticket
-└── 01JR1234567890ABCDEFGHIJKL/    # Another ticket
+├── .tix/
+│   ├── 01HQXW5P7R8ZYFG9K3NMVBCXSD/    # Ticket directory
+│   ├── 01HQXW6QA2TMDFE4H8RNJYWKPB/    # Another ticket
+│   └── 01JR1234567890ABCDEFGHIJKL/    # Another ticket
 ```
 
 ```
 backend branch/
-├── 01K3XXX.../
-│   ├── status_doing        # Empty file indicating status
-│   ├── priority_A          # Empty file indicating priority
-│   ├── title.md            # Title of the ticket
-│   ├── body.md             # Description/content of the ticket
-│   └── user_alice          # Assignee
-└── 01K3YYY.../
-    └── ...
+├── .tix/
+│   ├── 01HQXW5P7R8ZYFG9K3NMVBCXSD.../
+│   │   ├── s=b             # Status: b=backlog, t=todo, w=doing, d=done
+│   │   ├── p=z             # Priority: a=high, b=medium, c=low, z=default
+│   │   ├── title.md        # Title of the ticket
+│   │   └── body.md         # Description/content of the ticket
+│   └── 01JR1234567890ABCDEFGHIJKL.../
+│       └── ...
 ```
 
-Priority: a (highest), b, c, z (default)
-Status: todo, doing, done
+Priority: a (highest), b (medium), c (low), z (default)
+Status: b (backlog, default), t (todo), w (doing), d (done)
 
-**Important constraint**: Each ticket must have exactly one of each: `status_*`, `priority_*`. Multiple values are not allowed (e.g., a ticket cannot have both `status_todo` and `status_doing`).
+**Important constraint**: Each ticket must have exactly one of each: `s=*`, `p=*`. Multiple values are not allowed (e.g., a ticket cannot have both `s=t` and `s=w`).
 
 This design is infinitely extensible:
 
@@ -65,7 +66,7 @@ This design is infinitely extensible:
 
 The filesystem structure enables:
 
-- **Instant queries**: `ls -d */status_todo` finds all todo tickets
+- **Instant queries**: `find . -name "s=t"` finds all todo tickets
 - **Atomic updates**: Each attribute is a separate file
 - **No conflicts**: Different files = no merge conflicts
 - **Extensibility**: Add new attributes without schema changes
@@ -76,7 +77,7 @@ The filesystem structure enables:
 # Every tix operation translates to git operations
 tix pull                    → git pull origin <current-branch>
 tix add -t "Fix bug"        → Creates directory + files + git commit
-tix mv 01K3X --status doing → Renames file + git commit
+tix mv 01K454XJ012V30KBCG4QKPKDRR doing → Renames file + git commit
 tix push                    → git push origin <current-branch>
 ```
 
@@ -91,54 +92,44 @@ No staging area, no uncommitted changes - every operation is atomic and immediat
 
 ### Commit Message Format
 
-Every tix operation generates a structured commit message using the last 8 characters of the ULID:
+Every tix operation generates a structured commit message using the full ULID:
 
 ```bash
 # Creating tickets
 tix add -t "Fix login bug"
-→ git commit -m "NMVBCXSD New: Fix login bug"
+→ git commit -m "01HQXW5P7R8ZYFG9K3NMVBCXSD New: Fix login bug"
 
 # Changing status (workflow)
-tix mv NMVBCXSD doing
-→ git commit -m "NMVBCXSD Status: todo → doing"
+tix mv 01HQXW5P7R8ZYFG9K3NMVBCXSD doing
+→ git commit -m "01HQXW5P7R8ZYFG9K3NMVBCXSD Status: backlog → doing"
 
-tix mv NMVBCXSD done
-→ git commit -m "NMVBCXSD Status: doing → done"
+tix mv 01HQXW5P7R8ZYFG9K3NMVBCXSD done
+→ git commit -m "01HQXW5P7R8ZYFG9K3NMVBCXSD Status: doing → done"
 
 # Updating properties
-tix amend NMVBCXSD -p A
-→ git commit -m "NMVBCXSD Priority: Z → A"
+tix amend 01HQXW5P7R8ZYFG9K3NMVBCXSD -p a
+→ git commit -m "01HQXW5P7R8ZYFG9K3NMVBCXSD Priority: z → a"
 
-tix amend NMVBCXSD -u alice
-→ git commit -m "NMVBCXSD User: → alice"
+tix amend 01HQXW5P7R8ZYFG9K3NMVBCXSD -t "Fix critical login bug"
+→ git commit -m "01HQXW5P7R8ZYFG9K3NMVBCXSD Title: Fix login bug → Fix critical login bug"
 
-tix amend NMVBCXSD -u ""
-→ git commit -m "NMVBCXSD User: alice → unassigned"
-
-tix amend NMVBCXSD -t "Fix critical login bug"
-→ git commit -m "NMVBCXSD Title: Fix login bug → Fix critical login bug"
-
-tix amend NMVBCXSD -b "Updated description"
-→ git commit -m "NMVBCXSD Body: (updated)"
+tix amend 01HQXW5P7R8ZYFG9K3NMVBCXSD -b "Updated description"
+→ git commit -m "01HQXW5P7R8ZYFG9K3NMVBCXSD Body: (updated)"
 
 # Multiple changes in one amend
-tix amend NMVBCXSD -p A -u alice
-→ git commit -m "NMVBCXSD Priority: Z → A, User: → alice"
+tix amend 01HQXW5P7R8ZYFG9K3NMVBCXSD -p a -t "Updated title"
+→ git commit -m "01HQXW5P7R8ZYFG9K3NMVBCXSD Priority: z → a, Title: Fix login bug → Updated title"
 
-# Removing/archiving
-tix rm NMVBCXSD
-→ git commit -m "NMVBCXSD Deleted"
-
-tix rm --archive NMVBCXSD
-→ git commit -m "NMVBCXSD Archived"
+# Removing/archiving (not implemented)
+# tix rm 01HQXW5P7R8ZYFG9K3NMVBCXSD
+# → git commit -m "01HQXW5P7R8ZYFG9K3NMVBCXSD Deleted"
 ```
 
 This consistent format makes history readable and searchable:
 
-- Always starts with ticket suffix for easy filtering
+- Always starts with full ticket ULID for easy filtering
 - Field changes show transitions clearly (old → new)
 - Body changes shown as "(updated)" since content is too long
-- User field shows "unassigned" when cleared
 
 ## Conflict Resolution
 
@@ -154,11 +145,11 @@ Conflicts are rare due to ticket structure:
 
 ```bash
 # Both users changed same field of same ticket
-Local:  01K3XXX/status_doing
-Remote: 01K3XXX/status_done
+Local:  .tix/01K454XJ012V30KBCG4QKPKDRR/s=w
+Remote: .tix/01K454XJ012V30KBCG4QKPKDRR/s=d
 
 # Resolution (simple choice):
-Conflict in 01K3XXX status: [l]ocal doing or [r]emote done?
+Conflict in 01K454XJ012V30KBCG4QKPKDRR status: [l]ocal doing or [r]emote done?
 ```
 
 ## Initialization and Setup
@@ -186,18 +177,18 @@ git remote remove origin    → tix remote remove origin
 ```bash
 git config user.name "John"   → tix config user.name "John Doe"
 git config user.email "j@e"    → tix config user.email "john@example.com"
-git config default.priority Z  → tix config default.priority Z
-git config default.status todo → tix config default.status todo
-                              
+git config default.priority z  → tix config default.priority z
+git config default.status backlog → tix config default.status backlog
+
 git config user.name           → tix config user.name
                                   # John Doe
-                                  
+
 git config --list              → tix config --list
                                   # user.name=John Doe
                                   # user.email=john@example.com
-                                  # default.priority=Z
-                                  # default.status=todo
-                                  
+                                  # default.priority=z
+                                  # default.status=backlog
+
 git config --unset user.name   → tix config --unset default.priority
                                   # Removed config: default.priority
 ```
@@ -240,10 +231,10 @@ git add <file>              → tix add
                               # ---
                               # Detailed description here...
 
-git commit -m "msg"         → tix add -t "title" -b "body" -p A -u alice
+git commit -m "msg"         → tix add -t "title" -b "body" -p a -u alice
                               # -t: title
                               # -b: body
-                              # -p: priority (A|B|C|Z, default: Z)
+                              # -p: priority (a|b|c|z, default: z)
                               # -u: user (assignee, default: none)
                               # Always creates with status=todo
 ```
@@ -263,13 +254,13 @@ git ls-files -s            → tix ls -l
 # Filtering
                             → tix ls --status todo
                               # Filter by status
-                            → tix ls --priority A
+                            → tix ls --priority a
                               # Filter by priority
                             → tix ls --user @me
                               # Filter by assignee
 
 # Combined filters (AND logic)
-                            → tix ls --status todo --priority A
+                            → tix ls --status todo --priority a
                               # High priority todos
                             → tix ls --status doing --user @me
                               # My in-progress work
@@ -297,7 +288,7 @@ git show HEAD:file         → tix show <ticket>:field
                             → tix show <ticket>:body     # Just body content
                             → tix show <ticket>:status   # Just status (e.g., "doing")
                             → tix show <ticket>:title    # Just title text
-                            → tix show <ticket>:priority # Just priority (e.g., "A")
+                            → tix show <ticket>:priority # Just priority (e.g., "a")
                             → tix show <ticket>:user     # Just assignee
 ```
 
@@ -308,16 +299,16 @@ git status                  → tix status
                               # Project: backend
                               #
                               # Todo (5):
-                              #   01K3XXX... Fix login bug (priority: A)
-                              #   01K3YYY... Add user profile (priority: C)
+                              #   01K454XJ012V30KBCG4QKPKDRR... Fix login bug (priority: a)
+                              #   01HQXW5P7R8ZYFG9K3NMVBCXSD... Add user profile (priority: c)
                               #   ...
                               #
                               # Doing (2):
-                              #   01K3ZZZ... Refactor auth (3 days)
+                              #   01K3ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ... Refactor auth (3 days)
                               #   ...
                               #
                               # Done (last 24h):
-                              #   01K3AAA... Update deps
+                              #   01K3AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA... Update deps
                               #   ...
 ```
 
@@ -328,11 +319,11 @@ git status                  → tix status
 ```bash
 git commit --amend         → tix amend <ticket>
                               # Opens editor to modify all properties
-git commit --amend -m      → tix amend <ticket> -t "new title" -b "new body" -p B -u bob
+git commit --amend -m      → tix amend <ticket> -t "new title" -b "new body" -p b -u bob
                               # Can update any/all properties:
                               # -t: title
                               # -b: body
-                              # -p: priority (A|B|C|Z)
+                              # -p: priority (a|b|c|z)
                               # -u: user (assignee)
 ```
 
@@ -400,11 +391,11 @@ git blame <file>           → tix blame <ticket>
 git shortlog               → tix summary
                               # Summary of tickets by user
                               # alice (12):
-                              #   01K3XXX New: Fix login bug
-                              #   01K3YYY Status: todo → doing
+                              #   01K3XXXXXXXXXXXXXXXXXXXXX New: Fix login bug
+                              #   01K3YYYYYYYYYYYYYYYYYYY Status: todo → doing
                               #   ...
                               # bob (8):
-                              #   01K3ZZZ New: Add feature
+                              #   01K3ZZZZZZZZZZZZZZZZZZZ New: Add feature
                               #   ...
 
 git shortlog -sn           → tix summary --count
@@ -421,12 +412,12 @@ git shortlog -sn           → tix summary --count
 ```bash
 git diff                    → tix diff
                               # Local changes (not pushed):
-                              #   01K3XXX: status todo → doing
-                              #   01K3YYY: priority C → A
-                              #   01K3ZZZ: created "New feature"
+                              #   01K3XXXXXXXXXXXXXXXXXXXXX: status todo → doing
+                              #   01K454XJ012V30KBCG4QKPKDRR: priority c → a
+                              #   01K3ZZZZZZZZZZZZZZZZZZZ: created "New feature"
                               #
                               # Remote changes (not pulled):
-                              #   01K3AAA: status doing → done
+                              #   01K3AAAAAAAAAAAAAAAAAAA: status doing → done
                               #
                               # Use 'tix push' to upload your changes
                               # Use 'tix pull' to get remote changes
@@ -486,13 +477,13 @@ git describe               → tix describe
 
 git describe --long        → tix describe --long
                               # More detailed output
-                              # v1.0-release-47-01K3XXX
-                              # (47 changes since v1.0, latest: 01K3XXX)
+                              # v1.0-release-47-01K3XXXXXXXXXXXXXXXXXXXXX
+                              # (47 changes since v1.0, latest: 01K3XXXXXXXXXXXXXXXXXXXXX)
 ```
 
 ## Key Insights
 
-1. **`tix add`** - Creates new tickets (always status=todo), can set title, body, priority, user
+1. **`tix add`** - Creates new tickets (default status=backlog), can set title, body, priority, status
 2. **`tix amend`** - Edits ticket properties (title, body, priority, user) - but NOT status
 3. **`tix mv`** - Changes ticket status ONLY (todo → doing → done) - the workflow transition
 4. **`tix status`** - Shows semantic ticket info, not just file changes
@@ -518,12 +509,3 @@ Unlike git with its staging area and uncommitted changes, tix has **no WIP state
 - No uncommitted tickets - everything is persisted instantly
 
 This is intentional: tickets are lightweight and should always be saved.
-
-### Git Commands Not Mapped
-
-Some git commands don't map to tix because tickets work differently than code:
-
-- **`git merge`** - No merging projects (tickets are independent)
-- **`git rebase`** - No history rewriting (audit trail is sacred)
-- **`git bisect`** - Not needed for tickets
-- **`git clean`** - No untracked files (all operations are atomic)
