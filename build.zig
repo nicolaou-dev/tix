@@ -20,9 +20,7 @@ pub fn build(b: *std.Build) void {
             },
         }),
     });
-    if (target.result.os.tag != .windows) {
-        static_lib.linkLibC();
-    }
+    static_lib.linkLibC();
     
     if (target.result.os.tag == .linux) {
         static_lib.pie = true;
@@ -82,9 +80,7 @@ pub fn build(b: *std.Build) void {
                 },
             }),
         });
-        if (resolved_target.result.os.tag != .windows) {
-            lib.linkLibC();
-        }
+        lib.linkLibC();
         
         if (std.mem.indexOf(u8, platform, "linux") != null) {
             lib.pie = true;
