@@ -20,15 +20,14 @@ pub fn build(b: *std.Build) void {
             },
         }),
     });
-    static_lib.linkLibC();
+    if (target.result.os.tag != .windows) {
+        static_lib.linkLibC();
+    }
     
     if (target.result.os.tag == .linux) {
         static_lib.pie = true;
     }
     
-    if (target.result.os.tag == .windows) {
-        static_lib.bundle_compiler_rt = true;
-    }
     
     static_lib.root_module.optimize = .ReleaseSmall;
     
@@ -62,7 +61,7 @@ pub fn build(b: *std.Build) void {
         "x86_64-macos",
         "x86_64-linux",
         "aarch64-linux",
-        "x86_64-windows",
+        "x86_64-windows-msvc",
     };
 
     for (platforms) |platform| {
@@ -83,15 +82,14 @@ pub fn build(b: *std.Build) void {
                 },
             }),
         });
-        lib.linkLibC();
+        if (resolved_target.result.os.tag != .windows) {
+            lib.linkLibC();
+        }
         
         if (std.mem.indexOf(u8, platform, "linux") != null) {
             lib.pie = true;
         }
         
-        if (std.mem.indexOf(u8, platform, "windows") != null) {
-            lib.bundle_compiler_rt = true;
-        }
         
         lib.root_module.optimize = .ReleaseSmall;
         

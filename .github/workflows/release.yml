@@ -43,7 +43,7 @@ jobs:
             -C zig-out/aarch64-linux libtix.a tix.h
 
           # Package Windows x86_64
-          cd zig-out/x86_64-windows
+          cd zig-out/x86_64-windows-msvc
           zip ../../release/libtix-windows-x86_64.zip tix.dll tix.lib tix.h
           cd ../..
 
