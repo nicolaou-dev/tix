@@ -69,8 +69,10 @@ pub fn build(b: *std.Build) void {
 
         const resolved_target = b.resolveTargetQuery(target_query);
 
-        const lib = b.addLibrary(.{
+        // Create static library
+        const static_lib_release = b.addLibrary(.{
             .name = "tix",
+            .linkage = .static,
             .root_module = b.createModule(.{
                 .root_source_file = b.path("src/root.zig"),
                 .target = resolved_target,
@@ -80,24 +82,43 @@ pub fn build(b: *std.Build) void {
                 },
             }),
         });
-        lib.linkLibC();
+        static_lib_release.linkLibC();
+        static_lib_release.root_module.optimize = .ReleaseSmall;
         
         if (std.mem.indexOf(u8, platform, "linux") != null) {
-            lib.pie = true;
+            static_lib_release.pie = true;
         }
-        
-        
-        lib.root_module.optimize = .ReleaseSmall;
+
+        // Create shared library
+        const shared_lib_release = b.addLibrary(.{
+            .name = "tix",
+            .linkage = .dynamic,
+            .root_module = b.createModule(.{
+                .root_source_file = b.path("src/root.zig"),
+                .target = resolved_target,
+                .optimize = .ReleaseSafe,
+                .imports = &.{
+                    .{ .name = "ulid", .module = ulid.module("ulid") },
+                },
+            }),
+        });
+        shared_lib_release.linkLibC();
+        shared_lib_release.root_module.optimize = .ReleaseSmall;
         
 
-        const install = b.addInstallArtifact(lib, .{
+        const install_static = b.addInstallArtifact(static_lib_release, .{
+            .dest_dir = .{ .override = .{ .custom = platform } },
+        });
+
+        const install_shared = b.addInstallArtifact(shared_lib_release, .{
             .dest_dir = .{ .override = .{ .custom = platform } },
         });
 
         // Also install header file for each platform
         const install_header = b.addInstallFile(b.path("tix.h"), b.fmt("{s}/tix.h", .{platform}));
 
-        release_step.dependOn(&install.step);
+        release_step.dependOn(&install_static.step);
+        release_step.dependOn(&install_shared.step);
         release_step.dependOn(&install_header.step);
     }
 }
